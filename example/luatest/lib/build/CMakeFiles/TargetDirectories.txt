@@ -1,0 +1,8 @@
+/root/workspace/tsg_lua_0.99/example/demo_winxinhao/lib/build/CMakeFiles/edit_cache.dir
+/root/workspace/tsg_lua_0.99/example/demo_winxinhao/lib/build/CMakeFiles/handle_fasta_count.dir
+/root/workspace/tsg_lua_0.99/example/demo_winxinhao/lib/build/CMakeFiles/c_handle_weixinnum_static.dir
+/root/workspace/tsg_lua_0.99/example/demo_winxinhao/lib/build/CMakeFiles/c_handle_weixinnum.dir
+/root/workspace/tsg_lua_0.99/example/demo_winxinhao/lib/build/CMakeFiles/handle_fasta_count_static.dir
+/root/workspace/tsg_lua_0.99/example/demo_winxinhao/lib/build/CMakeFiles/handle_fasta_find_static.dir
+/root/workspace/tsg_lua_0.99/example/demo_winxinhao/lib/build/CMakeFiles/rebuild_cache.dir
+/root/workspace/tsg_lua_0.99/example/demo_winxinhao/lib/build/CMakeFiles/handle_fasta_find.dir

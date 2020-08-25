@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/root/workspace/tsg_lua_0.99/example/demo_winxinhao/lib/handle_weixinnum.cpp
+stdio.h
+-
+stdlib.h
+-
+stdint.h
+-
+string.h
+-
+arpa/inet.h
+-
+

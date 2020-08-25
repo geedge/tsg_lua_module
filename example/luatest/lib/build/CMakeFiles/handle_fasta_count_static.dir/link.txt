@@ -1,0 +1,2 @@
+/opt/rh/devtoolset-9/root/usr/bin/ar qc libhandle_fasta_count.a  CMakeFiles/handle_fasta_count_static.dir/handle_fasta_count.cpp.o
+/opt/rh/devtoolset-9/root/usr/bin/ranlib libhandle_fasta_count.a

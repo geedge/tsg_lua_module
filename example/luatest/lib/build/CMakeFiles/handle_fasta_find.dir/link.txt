@@ -1,0 +1,1 @@
+/usr/bin/g++ -fPIC  -shared -fPIC  -shared -Wl,-soname,libhandle_fasta_find.so -o libhandle_fasta_find.so CMakeFiles/handle_fasta_find.dir/handle_fasta_find.cpp.o 

@@ -1,0 +1,1 @@
+/usr/bin/g++ -fPIC  -shared -fPIC  -shared -Wl,-soname,libc_handle_weixinnum.so -o libc_handle_weixinnum.so CMakeFiles/c_handle_weixinnum.dir/handle_weixinnum.cpp.o 

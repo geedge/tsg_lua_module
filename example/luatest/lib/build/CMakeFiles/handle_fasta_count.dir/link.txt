@@ -1,0 +1,1 @@
+/usr/bin/g++ -fPIC  -shared -fPIC  -shared -Wl,-soname,libhandle_fasta_count.so -o libhandle_fasta_count.so CMakeFiles/handle_fasta_count.dir/handle_fasta_count.cpp.o 

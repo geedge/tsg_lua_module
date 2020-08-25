@@ -1,0 +1,2 @@
+/opt/rh/devtoolset-9/root/usr/bin/ar qc libc_handle_weixinnum.a  CMakeFiles/c_handle_weixinnum_static.dir/handle_weixinnum.cpp.o
+/opt/rh/devtoolset-9/root/usr/bin/ranlib libc_handle_weixinnum.a
