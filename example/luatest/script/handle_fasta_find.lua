@@ -1,6 +1,6 @@
 local data = tsg.data
 local data_len = string.len(data)
-local feature = "GGsCGG"
+local feature = "q"
 
 local result
 local _index, _end = string.find(data, feature)
