@@ -111,7 +111,7 @@ typedef struct{
     char buff[TSG_LUA_READER_BUFFSIZE];
 }tsg_lua_clfactory_file_t;
 
-static jmp_buf lua_exception[TSG_MAX_LUA_ID];
+//static jmp_buf lua_exception[TSG_MAX_LUA_ID];
 
 static const char *syntax_error[] =
 {
@@ -415,9 +415,9 @@ static int c_lua_atpanic(lua_State *L)
     char        *s = NULL;
     char        err[255];
     size_t      len = 0;
-    int         *lua_id;
+    jmp_buf     *lua_exception;
 
-    lua_id = (int *)lua_getexdata(L);
+    lua_exception = (jmp_buf *)lua_getexdata(L);
     if (lua_type(L, -1) == LUA_TSTRING)
     {
         s = (char *)lua_tolstring(L, -1, &len);
@@ -430,7 +430,7 @@ static int c_lua_atpanic(lua_State *L)
     }
     sprintf(err, "lua atpanic:lua VM creashed, reason:%*s\n", (int)len, s);
     debuginfo(err, __FILE__, __LINE__);
-    longjmp(lua_exception[*lua_id], 1);
+    longjmp(*lua_exception, 1);
 }
 #if 0
 int tsg_lua_memmem(lua_State *L)
@@ -484,12 +484,20 @@ static void *mem_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
 tsg_lua_handle tsg_lua_vm_create()
 {
     lua_State *L;
-    //const char *err;
+    jmp_buf *lua_exception = (jmp_buf *)tc_malloc(sizeof(jmp_buf));
+    if (lua_exception == NULL)
+    {
+        return NULL;
+    }
 
     L = luaL_newstate();
     //L = lua_newstate(mem_alloc, NULL); 
     if (L == NULL)
+    {
+        tc_free(lua_exception);
         return NULL;
+    }
+    lua_setexdata(L, lua_exception);
     lua_atpanic(L, c_lua_atpanic);
     luaL_openlibs(L);
     lua_createtable(L, 0, 2);
@@ -497,6 +505,7 @@ tsg_lua_handle tsg_lua_vm_create()
     //lua_setfield(L, -2, "memmem");
     lua_setglobal(L, "tsg");
 #if 0
+    const char *err;
     const char *code = "local ffi = require(\"ffi\")\n"\
                   "ffi.cdef[[char *memmem(const char *haystack, size_t haystacklen, const char *needle, size_t needlelen);]]\n"\
                   "tsg.ffi = ffi\n"\
@@ -521,7 +530,7 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
     int i = 0;
     int sharp = 0;
     tsg_lua_clfactory_file_t lf;
-    int *lua_id;
+    jmp_buf *lua_exception;
 
     if (L == NULL)
     {
@@ -546,7 +555,7 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
         return ERR_IN_LEN_INVAILD;
     }
 
-    lua_id = (int *)lua_getexdata(L);
+    lua_exception = (jmp_buf *)lua_getexdata(L);
 
     lf.extraline = 0;
     lf.sent_begin = 0;
@@ -661,7 +670,7 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
     lua_setfield(L, -2, "data");
     lua_settop(L, 1);
 
-    if (setjmp(lua_exception[*lua_id]) == 0)
+    if (setjmp(*lua_exception) == 0)
     {
         if (lua_pcall(L, 0, LUA_MULTRET, 0))
         {
@@ -734,7 +743,7 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
     int sharp = 0;
     int status;
     tsg_lua_clfactory_buffer_t ls;
-    int *lua_id;
+    jmp_buf *lua_exception;
 
     if (L == NULL)
     {
@@ -759,7 +768,7 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
         return ERR_IN_LEN_INVAILD;
     }
 
-    lua_id = (int *)lua_getexdata(L);
+    lua_exception = (jmp_buf *)lua_getexdata(L);
 
     ls.s =  script;
     ls.size = script_len;
@@ -858,7 +867,7 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
     lua_pushlstring(L, in, in_len);
     lua_setfield(L, -2, "data");
     lua_settop(L, 1);
-    if (setjmp(lua_exception[*lua_id]) == 0)
+    if (setjmp(*lua_exception) == 0)
     {
         if (lua_pcall(L, 0, LUA_MULTRET, 0))
         {
@@ -1201,7 +1210,7 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
     char err_buf[255];
     int i = 0;
     int num = 0;
-    int *lua_id;
+    jmp_buf *lua_exception;
 
     if (L == NULL)
     {
@@ -1225,7 +1234,7 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
     }
 
     lua_settop(L, 0);
-    lua_id = (int *)lua_getexdata(L);
+    lua_exception = (jmp_buf *)lua_getexdata(L);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, script_id);
     lua_getglobal(L, "tsg");
@@ -1233,7 +1242,7 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
     lua_setfield(L, -2, "data");
     lua_settop(L, 1);
 
-    if (setjmp(lua_exception[*lua_id]) == 0)
+    if (setjmp(*lua_exception) == 0)
     {
         if (lua_pcall(L, 0, LUA_MULTRET, 0))
         {
@@ -1299,31 +1308,20 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
 int tsg_destory_lua(tsg_lua_handle lua)
 {
     lua_State *L = (lua_State *)lua;
+    jmp_buf *lua_exception = NULL;
 
     if (L == NULL)
     {
         debuginfo("lua VM is null.", __FILE__, __LINE__);
         return ERR_LUAVM_ISNULL;
+    }
+    lua_exception = (jmp_buf *)lua_getexdata(L);
+    if (lua_exception != NULL)
+    {
+        tc_free(lua_exception);
     }
 
     lua_close(L);
     return 0;
 }
 
-int tsg_lua_identify(tsg_lua_handle lua, size_t *id)
-{
-    lua_State *L = (lua_State *)lua;
-    if (L == NULL)
-    {
-        debuginfo("lua VM is null.", __FILE__, __LINE__);
-        return ERR_LUAVM_ISNULL;
-    }
-    if (*id > TSG_MAX_LUA_ID)
-    {
-        return ERR_LUA_ID;
-    }
-
-    lua_setexdata(L, id);
-
-    return 0;
-}

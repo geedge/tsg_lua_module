@@ -752,7 +752,6 @@ static void *lua_file_handle(void *ptr)
     {
         pthread_exit(debuginfo);
     }
-    tsg_lua_identify(lua, &thread_info->thread_id);
     if (file_to_buffer(thread_info->script, script, &script_len))
     {
         pthread_exit(debuginfo);
