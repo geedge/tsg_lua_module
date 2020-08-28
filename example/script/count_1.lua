@@ -1,4 +1,4 @@
-local str = tsg.data
+local str = TSG.data
 local len = string.len(str)
 local thread_id = string.byte(str, len)
 local str = string.format("[lua][thread_id:%d][count_1.lua]:str:%s, len:%d", thread_id, str, len - 1)

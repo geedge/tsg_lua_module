@@ -1,4 +1,4 @@
-local str = tsg.data
+local str = TSG.data
 print("-----------")
 print("str")
 print("-----------")

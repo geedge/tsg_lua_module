@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 SET(CMAKE_CXX_COMPILER /usr/bin/g++)
 aux_source_directory(. DIR_LIB_SRCS)
-include_directories("/usr/local/include/luajit-2.1/")
+include_directories("/usr/local/include/luajit-2.1/" "/usr/include/gperftools/")
 link_directories("/usr/local/lib")
 link_libraries("libluajit-5.1.a")
 

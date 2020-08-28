@@ -1,4 +1,4 @@
-local data = tsg.data
+local data = TSG.data
 local data_len = string.len(data)
 local str = string.format("[lua]:data:%s len:%d", data, data_len)
 print(str)

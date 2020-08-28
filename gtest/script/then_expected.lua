@@ -1,4 +1,4 @@
 if not nil 
-    str = tsg.data
+    str = TSG.data
     return string.len(str), str  
 end

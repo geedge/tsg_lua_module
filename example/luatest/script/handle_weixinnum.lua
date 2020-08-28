@@ -1,13 +1,15 @@
 ---------------------------------------------------------------------------------------------
 --                          脚本功能：在数据中查找符合特征的weixinnum                      --
+--  输入：                                                                                 --
+--  TSG.data                                                                               --
 --  特征如下：                                                                             --
 --  00 00 00 09 | 77 65 69 78 69 6e 6d 75 2d | 00 00 00 0a | 31 39 35 35 37 34 30 37 38 30 --
 --  weixinnum   | w  e  i  x  i  n  n  u  m  | weixinnum   | 1  9  5  5  7  4  0  7  8  0  --
 --  字符串长度  |    字符串                  | 数值长度    |        字符串                 --
 ---------------------------------------------------------------------------------------------
 
-local data = tsg.data   --tsg.data 获取待处理数据 
-local data_len = string.len(tsg.data)
+local data = TSG.data   --TSG.data 获取待处理数据 
+local data_len = string.len(data)
 local feature = "weixinnum" --待识别的特征
 local max_weixinnum_len = 12
 local offset = 4 -- 字符串长度所占位数

@@ -1,6 +1,6 @@
 
-local data = tsg.data
-local data_len = string.len(tsg.data)
+local data = TSG.data
+local data_len = string.len(data)
 local feature = "weixinnum"
 local feature_len = string.len(feature);
 local max_weixinnum_len = 12
@@ -8,7 +8,7 @@ local offset = 4
 local locate = 0
 
 -- 查找字符串weixinnum位置
-local _start, _end = tsg.memmem(data, data_len, feature, feature_len)
+local _start, _end = TSG.memmem(data, data_len, feature, feature_len)
 if not _end then
     return 1, false
 end

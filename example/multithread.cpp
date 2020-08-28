@@ -34,6 +34,7 @@ typedef struct lua_data_s{
 typedef struct{
     lua_data_t data;
     int thread_id;
+    tsg_lua_handle lua;
 }userdata_t;
 
 
@@ -178,6 +179,7 @@ int main(int argc, char *argv[])
 {
     int thread_num;
     pthread_t thread[MAX_THREAD_NUM] = {0};
+    tsg_lua_handle lua[MAX_THREAD_NUM] = {0};
     int thread_sum;
     int ch, i;
     char buf[1024];
@@ -252,6 +254,8 @@ int main(int argc, char *argv[])
         data->data_len = buf_len;
         data->data[buf_len] = thread_num;
         data->data_len++;
+        lua[i] = tsg_lua_vm_create();
+        data->lua = lua[i];
         pthread_create(&thread[thread_num], NULL, lua_function, (void *)&userdata[thread_num]);
     }
 

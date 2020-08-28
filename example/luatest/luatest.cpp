@@ -156,11 +156,12 @@ int read_file_list(const char *path, char file_name[][256])
 static int init_conf(char *path, conf_t *conf)
 {
     char buf[1024];
+    int ret = 0;
     size_t buf_len = sizeof(buf);
     FILE *fp = fopen(path, "r");
     if (fp == NULL)
     {
-        perror("error opening file");
+        perror(path);
         return -1;
     }
     while(fgets(buf, buf_len, fp) != NULL)
@@ -197,35 +198,25 @@ static int init_conf(char *path, conf_t *conf)
                 conf->complete |= THREAD_NUM_COMPLETE;
                 break;
             case 'f':
-                if (conf->complete & FEATURE_COMPLETE)
+                if (!(conf->complete & FILE_TYPE_COMPLETE))
                 {
-                    if (conf->complete & FILE_TYPE_COMPLETE)
+                    ret =  sscanf(buf, "file_type %hhd", &conf->file_type);
+                    if ((ret !=0) && (ret != EOF))
                     {
+                        conf->complete |= FILE_TYPE_COMPLETE;
                         break;
-                    }else
-                    {
-                        /* file type */
-                        if ((sscanf(buf, "file_type %hhd", &conf->file_type) == EOF) )
-                        {
-                            printf("error: conf_file: feature error\n");
-                            return -1;
-                        }else
-                        {
-                            if ((conf->file_type != text_type) && (conf->file_type != pcap_type))
-                            {
-                                return -1;
-                            }
-                            conf->complete |= FILE_TYPE_COMPLETE;
-                            break;
-                        }
                     }
                 }
-                if ((sscanf(buf, "feature %s", conf->feature) == EOF) || (strlen(conf->feature) == 0))
+
+                if (!(conf->complete & FEATURE_COMPLETE))
                 {
-                    printf("error: conf_file: feature error\n");
-                    return -1;
+                    ret = sscanf(buf, "feature %s", conf->feature); 
+                    if ((ret !=0 ) && (ret != EOF) && (strlen(conf->feature) != 0))
+                    {
+                        conf->complete |= FEATURE_COMPLETE;
+                        break;
+                    }
                 }
-                conf->complete |= FEATURE_COMPLETE;
                 break;
             case 'i':
                 if (conf->complete & INPUT_COMPLETE)
@@ -290,7 +281,7 @@ int file_to_buffer(const char *file, char *buffer, size_t *len)
     *len = 0;
     if (fp == NULL)
     {
-        printf("fopen file failed\n");
+        printf("fopen file failed:%s\n", file);
         return -1;
     }
     do{
@@ -349,8 +340,8 @@ void c_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_ch
     debuginfo_len = strlen(pcap_info->debuginfo);
     if (debuginfo_len < 9500)
     {
-        sprintf((char *)&pcap_info->debuginfo[debuginfo_len], "%-10s%-10ld%-11d%-20s%-20s%-20ld%-20ld\n", 
-                "C", pcap_info->thread_id, pcap_info->packet_num, pcap_info->feature, result, time, pcap_info->total_time);
+        sprintf((char *)&pcap_info->debuginfo[debuginfo_len], "%-10s%-10ld%-11d%-11d%-20s%-20s%-20ld%-20ld\n", 
+                "C", pcap_info->thread_id, pcap_info->packet_num, pkthdr->caplen, pcap_info->feature, result, time, pcap_info->total_time);
     }
     return;
 }
@@ -603,8 +594,8 @@ void lua_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_
     debuginfo_len = strlen(pcap_info->debuginfo);
     if (debuginfo_len < 9500)
     {
-        sprintf(&pcap_info->debuginfo[debuginfo_len], "%-10s%-10ld%-11d%-20s%-20s%-20ld%-20ld\n", 
-                "LUA", pcap_info->thread_id, pcap_info->packet_num, pcap_info->feature, result, time, pcap_info->total_time);
+        sprintf(&pcap_info->debuginfo[debuginfo_len], "%-10s%-10ld%-11d%-11d%-20s%-20s%-20ld%-20ld\n", 
+                "LUA", pcap_info->thread_id, pcap_info->packet_num, pkthdr->caplen, pcap_info->feature, result, time, pcap_info->total_time);
     }
     return ;
 }
@@ -752,7 +743,6 @@ static void *lua_file_handle(void *ptr)
     {
         pthread_exit(debuginfo);
     }
-    tsg_lua_identify(lua, &thread_info->thread_id);
     if (file_to_buffer(thread_info->script, script, &script_len))
     {
         pthread_exit(debuginfo);
@@ -904,7 +894,7 @@ int main(int argc, char *argv[])
     printf("\n==============================================================================================================================\n");
     if (conf.file_type & pcap_type)
     {
-        printf("%-10s%-10s%-11s%-20s%-20s%-20s%-20s\n", "C or LUA", "thread_id", "packet_num", "feature", "result", "time", "total_time");
+        printf("%-10s%-10s%-11s%-11s%-20s%-20s%-20s%-20s\n", "C or LUA", "thread_id", "packet_num", "packet_len", "feature", "result", "time", "total_time");
     }else
     {
         printf("%-10s%-10s%-20s%-20s%-20s%-20s\n", "C or LUA", "thread_id", "file_name", "feature", "result", "time");
@@ -927,12 +917,13 @@ int main(int argc, char *argv[])
         }
 
         CPU_ZERO(&mask);
-        CPU_SET(thread_num, &mask);
+        CPU_SET(thread_num + 8, &mask);
         if (pthread_setaffinity_np(thread[thread_num], sizeof(mask), &mask) != 0)
         {
             printf("warning:could not set CPU affinity, continuing...\n");
         }
     }
+    printf("\n");
 
     for (thread_num = 0; thread_num < conf.thread_num; thread_num++)
     {
@@ -962,12 +953,13 @@ int main(int argc, char *argv[])
         }
 
         CPU_ZERO(&mask);
-        CPU_SET(thread_num, &mask);
+        CPU_SET(thread_num + 8, &mask);
         if (pthread_setaffinity_np(thread[thread_num], sizeof(mask), &mask) != 0)
         {
             printf("warning:could not set CPU affinity, continuing...\n");
         }
     }
+    printf("\n");
 
     for (thread_num = 0; thread_num < conf.thread_num; thread_num++)
     {

@@ -1,10 +1,10 @@
-local data = tsg.data
+local data = TSG.data
 local data_len = string.len(data)
 local feature = "weixinnum"
 local feature_len = string.len(feature)
 local max_weixinnum_len = 12
-local C = tsg.C
-local ffi = tsg.ffi
+local C = TSG.C
+local ffi = TSG.ffi
 
 -- 查找weixinnum字符串位置
 local weixinnum_name = C.memmem(data, data_len, feature, feature_len)

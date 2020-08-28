@@ -1,4 +1,4 @@
-local str = tsg.data;
+local str = TSG.data;
 local len = string.len(str)
 local thread_id = string.byte(str, -1)
 local info = string.format("[lua][thread_id:%d][protocol_recognition.lua]:str:%s, str_len:%d", thread_id, str, len - 1)

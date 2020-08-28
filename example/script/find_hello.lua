@@ -1,4 +1,4 @@
-local ss = tsg.data
+local ss = TSG.data
 print("[lua]:the parameter of lua function is '"..ss.."'")
 print("[lua]:start find 'hello'...")
 local index_s, index_e = string.find(ss, 'hello')   

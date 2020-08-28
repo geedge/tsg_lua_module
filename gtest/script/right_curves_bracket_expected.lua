@@ -1,2 +1,2 @@
-local str = string.format('%s', tsg.data
+local str = string.format('%s', TSG.data
 return string.len(str), str  
