@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project (luatest)
 
-include_directories("/usr/include/gperftools")
+include_directories("/usr/local/include/gperftools")
 include_directories("../../include")
 link_directories("../../lib")
 link_libraries(tsglua pthread dl tcmalloc)
