@@ -11,7 +11,7 @@ set(CMAKE_MACOSX_RPATH 0)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
-set(CMAKE_INSTALL_PREFIX "/usr/local/lib/")
+set(CMAKE_INSTALL_PREFIX /home/mesasoft/sapp_run)
 
 add_subdirectory(3rd) 
 add_subdirectory(src) 
