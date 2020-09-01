@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project (single_thread)
 project (multithread)
 
-link_directories("/root/workspace/tsg_lua_0.99/lib")
+link_directories("../lib")
 link_libraries(tsglua pthread)
 
 add_definitions(-g -W -Wall)
