@@ -14,7 +14,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_INSTALL_PREFIX /home/mesasoft/sapp_run)
 
 add_subdirectory(3rd) 
-add_subdirectory(src) 
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/libtsglua.so DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT PROFILE)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/libtsglua.a DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT PROFILE)
