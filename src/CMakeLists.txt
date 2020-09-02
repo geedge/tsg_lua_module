@@ -10,6 +10,8 @@ add_library(tsglua_static ${DIR_LIB_SRCS})
 add_library(tsglua SHARED ${DIR_LIB_SRCS})
 set_target_properties(tsglua_static PROPERTIES OUTPUT_NAME "tsglua")
 
+add_dependencies(tsglua_static luajit2-static)
+add_dependencies(tsglua luajit2-static)
 target_link_libraries(tsglua dl luajit2-static)
 #set_target_properties(tsglua  PROPERTIES PREFIX "")
 
