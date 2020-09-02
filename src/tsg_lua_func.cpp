@@ -14,8 +14,7 @@ extern "C"
 #include "luajit.h"
 #include "lauxlib.h"
 }
-#include<tcmalloc.h>
-#include"../include/tsg_lua_interface.h"
+#include"tsg_lua_interface.h"
 
 #ifndef MIN
 #define MIN(a,b) (((a) < (b))?(a):(b))
@@ -469,33 +468,19 @@ int tsg_lua_memmem(lua_State *L)
     return 2;
 }
 
-#if 0
-static void *mem_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
-{
-    (void)ud;
-    (void)osize;
-    if (nsize == 0) {
-        tc_free(ptr);
-        return NULL;
-    } else {
-        return tc_realloc(ptr, nsize);
-    }
-}
-#endif
 tsg_lua_handle tsg_lua_vm_create()
 {
     lua_State *L;
-    jmp_buf *lua_exception = (jmp_buf *)tc_malloc(sizeof(jmp_buf));
+    jmp_buf *lua_exception = (jmp_buf *)malloc(sizeof(jmp_buf));
     if (lua_exception == NULL)
     {
         return NULL;
     }
 
     L = luaL_newstate();
-    //L = lua_newstate(mem_alloc, NULL); 
     if (L == NULL)
     {
-        tc_free(lua_exception);
+        free(lua_exception);
         return NULL;
     }
     lua_setexdata(L, lua_exception);
@@ -1319,7 +1304,7 @@ int tsg_destory_lua(tsg_lua_handle lua)
     lua_exception = (jmp_buf *)lua_getexdata(L);
     if (lua_exception != NULL)
     {
-        tc_free(lua_exception);
+        free(lua_exception);
     }
 
     lua_close(L);

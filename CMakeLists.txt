@@ -11,15 +11,13 @@ set(CMAKE_MACOSX_RPATH 0)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
-set(CMAKE_INSTALL_PREFIX /home/mesasoft/sapp_run)
+set(CMAKE_INSTALL_PREFIX /usr/local/lib)
 
-add_subdirectory(3rd) 
+add_subdirectory(support) 
+add_subdirectory(src) 
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/libtsglua.so DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT PROFILE)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/libtsglua.a DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT PROFILE)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/libtsglua.so DESTINATION ${PROJECT_SOURCE_DIR}/lib COMPONENT PROFILE)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/libtsglua.a DESTINATION ${PROJECT_SOURCE_DIR}/lib COMPONENT PROFILE)
-install(FILES ${PROJECT_SOURCE_DIR}/src/tsg_lua_interface.h DESTINATION ${PROJECT_SOURCE_DIR}/include COMPONENT PROFILE)
 
 include(Package)
 
