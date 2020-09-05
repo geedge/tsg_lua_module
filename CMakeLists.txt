@@ -16,8 +16,6 @@ set(CMAKE_INSTALL_PREFIX /opt/MESA)
 add_subdirectory(support) 
 add_subdirectory(src) 
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/libtsglua.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/ COMPONENT LIBRARY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/libtsglua.a DESTINATION ${CMAKE_INSTALL_PREFIX}/lib COMPONENT LIBRARY)
 install(FILES ./src/tsg_lua_interface.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/MESA COMPONENT HEADER)
 
 include(Package)
