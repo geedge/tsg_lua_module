@@ -15,7 +15,3 @@ add_dependencies(tsglua luajit2-static)
 target_link_libraries(tsglua dl luajit2-static)
 #set_target_properties(tsglua  PROPERTIES PREFIX "")
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libtsglua.so DESTINATION ${PROJECT_SOURCE_DIR}/lib COMPONENT PROFILE)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libtsglua.a DESTINATION ${PROJECT_SOURCE_DIR}/lib COMPONENT PROFILE)
-install(FILES ${PROJECT_SOURCE_DIR}/src/tsg_lua_interface.h DESTINATION ${PROJECT_SOURCE_DIR}/include COMPONENT PROFILE)
-
