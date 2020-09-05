@@ -7,11 +7,14 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -shared -fPIC")
 SET(CMAKE_CXX_DEBUG_FLAGS "${CMAKE_CXX_DEBUG_FLAGS} -DTSG_LUA_DEBUG")
 SET(CMAKE_BUILD_TYPE "Release")
 add_library(${lib_name}_static ${DIR_LIB_SRCS})
-add_library(${lib_name} SHARED ${DIR_LIB_SRCS})
+add_library(${lib_name}_shared SHARED ${DIR_LIB_SRCS})
 set_target_properties(${lib_name}_shared PROPERTIES OUTPUT_NAME ${lib_name})
 
 add_dependencies(${lib_name}_static luajit2-static)
 add_dependencies(${lib_name} luajit2-static)
-target_link_libraries(${lib_name} dl luajit2-static)
+target_link_libraries(${lib_name}_shared dl luajit2-static)
 #set_target_properties(${lib_name}  PROPERTIES PREFIX "")
 
+
+install(TARGETS ${lib_name}_shared  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib COMPONENT LIBRARY)
+install(TARGETS ${lib_name}_static  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib COMPONENT LIBRARY)
