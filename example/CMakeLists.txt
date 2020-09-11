@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project (single_thread)
 project (multithread)
 
-link_directories("../lib")
+link_directories("/opt/MESA/lib")
 link_libraries(tsglua pthread)
 
 add_definitions(-g -W -Wall)

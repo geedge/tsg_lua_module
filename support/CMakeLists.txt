@@ -4,7 +4,7 @@ set(LUAJIT2_ROOT            ${CMAKE_CURRENT_BINARY_DIR})
 set(LUAJIT2_URL             ${CMAKE_CURRENT_SOURCE_DIR}/luajit2-2.1-agentzh.zip)
 set(LUAJIT2_URL_MD5         6e17cd2263473f9b85b47d0736cf12da)
 set(LUAJIT2_MAKE            cd ${LUAJIT2_ROOT}/luajit2/src/luajit2 && make) 
-set(LUAJIT2_INSTALL         cd ${LUAJIT2_ROOT}/luajit2/src/luajit2 && make install PREFIX=${LUAJIT2_ROOT}/install)
+set(LUAJIT2_INSTALL         cd ${LUAJIT2_ROOT}/luajit2/src/luajit2 && make install PREFIX=${LUAJIT_INSTALL_PREFIX})
 
 ExternalProject_Add(luajit2
         PREFIX              luajit2
@@ -20,5 +20,5 @@ ExternalProject_Add(luajit2
 
 add_library(luajit2-static STATIC IMPORTED GLOBAL)
 add_dependencies(luajit2-static luajit2)
-set_property(TARGET luajit2-static PROPERTY IMPORTED_LOCATION ${LUAJIT2_ROOT}/install/lib/libluajit-5.1.a)
+set_property(TARGET luajit2-static PROPERTY IMPORTED_LOCATION ${LUAJIT_INSTALL_PREFIX}/lib/libluajit-5.1.a)
 

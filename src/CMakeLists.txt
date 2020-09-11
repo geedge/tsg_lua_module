@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 SET(CMAKE_CXX_COMPILER /usr/bin/g++)
 aux_source_directory(. DIR_LIB_SRCS)
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/../support/install/include/luajit-2.1")
+include_directories("${LUAJIT_INSTALL_PREFIX}/include/luajit-2.1")
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -shared -fPIC")
 SET(CMAKE_CXX_DEBUG_FLAGS "${CMAKE_CXX_DEBUG_FLAGS} -DTSG_LUA_DEBUG")

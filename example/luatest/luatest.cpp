@@ -19,7 +19,6 @@ extern "C"
 #include<sys/stat.h>
 #include<dirent.h>
 }
-#include<tcmalloc.h>
 #include"tsg_lua_interface.h"
 
 
@@ -449,7 +448,7 @@ static void *c_file_handle(void *ptr)
     char file_name[100][256];
     c_text_info_t text_info;
 
-    debuginfo = (char *)tc_malloc(10240);
+    debuginfo = (char *)malloc(10240);
     if (debuginfo == NULL)
     {
         perror(" ");
@@ -729,7 +728,7 @@ static void *lua_file_handle(void *ptr)
     struct stat s_buf;
     char file_name[100][256];
 
-    debuginfo = (char *)tc_malloc(10240);
+    debuginfo = (char *)malloc(10240);
     if (debuginfo == NULL)
     {
         perror(" ");
@@ -932,7 +931,7 @@ int main(int argc, char *argv[])
         {
             printf("%s", retval);
             fwrite(retval, strlen(retval), 1, log);
-            tc_free(retval);
+            free(retval);
         }
     }
 #endif
@@ -968,7 +967,7 @@ int main(int argc, char *argv[])
         {
             printf("%s", retval);
             fwrite(retval, strlen(retval), 1, log);
-            tc_free(retval);
+            free(retval);
         }
     }
 
