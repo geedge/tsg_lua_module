@@ -1,7 +1,6 @@
 /*************************************************************************
     > File Name: gtest_tsg_lua_vm_create.cpp
     > Author: pxz
-    > Mail: 1500428751@qq.com 
     > Created Time: Sun 19 Jul 2020 01:27:13 PM CST
  ************************************************************************/
 #include <gtest/gtest.h>
