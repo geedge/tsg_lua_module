@@ -6,6 +6,8 @@ variables:
   INSTALL_DEPENDENCY_LIBRARY: libMESA_handle_logger-devel  libcjson-devel libMESA_field_stat2-devel  sapp-devel framework_env  libMESA_prof_load-devel http-devel dns-devel ftp-devel mail-devel ssl-devel  librdkafka-devel libmaatframe-devel tsg_master-devel libdocumentanalyze-devel
 
 stages:
+- analysis
+- test
 - build
 
 .build_by_travis:
@@ -20,6 +22,25 @@ stages:
   - cd build
   tags:
   - share
+
+run_cppcheck:
+  stage: analysis
+  script:
+    - mkdir build || true
+    - cd build
+    - cmake3 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+    - cppcheck --project=compile_commands.json --enable=all --error-exitcode=1 --suppress=unusedFunction --suppress=missingInclude --suppress=uselessAssignmentPtrArg --suppress=unmatchedSuppression
+  tags:
+    - share
+
+run_test:
+  stage: test
+  extends: .build_by_travis
+  script:
+    - yum makecache
+    - ./ci/travis.sh
+    - cd build
+    - ctest --verbose  
 
 branch_build_debug:
   stage: build

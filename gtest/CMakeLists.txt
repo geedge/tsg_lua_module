@@ -7,6 +7,9 @@ link_directories("/opt/MESA/lib")
 link_libraries(tsglua gtest gtest_main pthread)
 
 add_definitions(-g -W -Wall)
-add_executable(../gtest_tsg_lua ${SRCS})
-target_link_libraries(../gtest_tsg_lua tsglua gtest gtest_main pthread)
+add_executable(gtest_tsg_lua ${SRCS})
+target_link_libraries(gtest_tsg_lua tsglua gtest gtest_main pthread)
+
+add_test(NAME SOFT_LINK COMMAND sh -c "ln -sf ${CMAKE_CURRENT_SOURCE_DIR}/script" "${CMAKE_CURRENT_BINARY_DIR}/script")
+add_test(NAME LUA_TEST COMMAND gtest_tsg_lua)
 

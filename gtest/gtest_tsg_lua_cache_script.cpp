@@ -18,8 +18,10 @@ static char *get_script_buffer(const char *script)
         {
             buffer[num] = 0;
             script_len = num - 1;
+            fclose(fp);
             return buffer;
         }
+        fclose(fp);
     }
     return NULL;
 }

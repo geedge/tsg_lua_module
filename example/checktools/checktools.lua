@@ -15,7 +15,7 @@ if arg[1] then
     end
 end
 
-function file_is_exit(path)
+local function file_is_exit(path)
     local file = io.open(path)
     if not file then
         return false
@@ -25,7 +25,7 @@ function file_is_exit(path)
 end
 
 if not file_is_exit(conf_file) then
-    print("error: conf file: ".. file .." not exits.")
+    print("error: conf file: ".. conf_file .." not exits.")
     return false
 end
 

@@ -242,15 +242,11 @@ static int tsg_lua_clfactory_bytecode_buffer_prepare(tsg_lua_clfactory_buffer_t 
 
 static int tsg_lua_clfactory_bytecode_file_prepare(tsg_lua_clfactory_file_t *lf)
 {
-    int little_endian, version, stripped;
-    size_t  size;
-    long fsize;
-
     *lf->begin_code.str = LUA_SIGNATURE[0];
     if (lf->file_type == TSG_LUA_BC_LJ)
     {
         /* get bytecode header */
-        size = fread(lf->begin_code.str + 1, 1, LJ_HEADERSIZE - 1, lf->f);
+        size_t size = fread(lf->begin_code.str + 1, 1, LJ_HEADERSIZE - 1, lf->f);
         if (size != LJ_HEADERSIZE - 1)
         {
             debuginfo("can not read header", __FILE__, __LINE__);
@@ -258,7 +254,7 @@ static int tsg_lua_clfactory_bytecode_file_prepare(tsg_lua_clfactory_file_t *lf)
         }
         
         /* get bytecode  version */
-        version = *(lf->begin_code.str + 3);
+        int version = *(lf->begin_code.str + 3);
 
         /* compare bytecode header */
         if (strncmp(lf->begin_code.str, LJ_SIGNATURE, sizeof(LJ_SIGNATURE) - 1))
@@ -270,7 +266,7 @@ static int tsg_lua_clfactory_bytecode_file_prepare(tsg_lua_clfactory_file_t *lf)
         lf->begin_code_len =  LJ_HEADERSIZE;
 
         /* little endian or big little endian */
-        little_endian = !((*(lf->begin_code.str + 4)) & LJ_BCDUMP_F_BE);
+        int little_endian = !((*(lf->begin_code.str + 4)) & LJ_BCDUMP_F_BE);
         if (little_endian == 0)
         {
             debuginfo("not support byte-code coding by big-endian", __FILE__, __LINE__);
@@ -278,7 +274,7 @@ static int tsg_lua_clfactory_bytecode_file_prepare(tsg_lua_clfactory_file_t *lf)
         }
 
         /* stripped or debug */
-        stripped = (*(lf->begin_code.str + 4)) & LJ_BCDUMP_F_STRIP;
+        int stripped = (*(lf->begin_code.str + 4)) & LJ_BCDUMP_F_STRIP;
         if (!stripped)
         {
             debuginfo("not support byte-code include debug-info", __FILE__, __LINE__);
@@ -298,7 +294,7 @@ static int tsg_lua_clfactory_bytecode_file_prepare(tsg_lua_clfactory_file_t *lf)
             debuginfo("bytecode format version unsupported", __FILE__, __LINE__);
             return ERR_SCRIPT_BYTECODE_VERSION_UNSUPPORTED;
         }
-        fsize = tsg_lua_clfactory_file_size(lf->f);
+        long fsize = tsg_lua_clfactory_file_size(lf->f);
         if (fsize < 0)
         {
             return ERR_SCRIPT_IS_BAD;
@@ -490,14 +486,13 @@ tsg_lua_handle tsg_lua_vm_create()
     lua_setfield(L, -2, "memmem");
     lua_setglobal(L, "TSG");
 #if 1
-    const char *err;
     const char *code = "local ffi = require(\"ffi\")\n"\
                   "ffi.cdef[[char *memmem(const char *haystack, size_t haystacklen, const char *needle, size_t needlelen);]]\n"\
                   "TSG.ffi = ffi\n"\
                   "TSG.C = ffi.C"; 
     if (luaL_dostring(L, code))
     {
-        err = lua_tostring(L, -1);
+        const char *err = lua_tostring(L, -1);
         debuginfo(err, __FILE__, __LINE__);
         lua_close(L);
         return NULL;
@@ -510,7 +505,6 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
 {
     lua_State *L = (lua_State *)lua;
     const char *err = NULL;
-    char err_buf[255];
     int ret = 0;
     int i = 0;
     int sharp = 0;
@@ -567,7 +561,7 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
         sharp = 1;
     }
 
-    if (c == LUA_SIGNATURE[0] && script)
+    if (c == LUA_SIGNATURE[0])
     {
         lf.f = freopen(script, "rb", lf.f);
         if (lf.f == NULL)
@@ -671,12 +665,14 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
         int num = lua_gettop(L);
         if (num < 2)
         {
+            char err_buf[255];
             sprintf((char *)err_buf,"num:%d", num);
             debuginfo(err_buf, __FILE__, __LINE__);
             return ERR_SCRIPT_RETURN_TOO_FEW;
         }
         if (num > 2)
         {
+            char err_buf[255];
             sprintf((char *)err_buf,"num:%d", num);
             debuginfo(err_buf, __FILE__, __LINE__);
             return ERR_SCRIPT_RETURN_TOO_MUCH;
@@ -704,7 +700,8 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
                 *out_type = INTEGER;
                 break;
             default:
-                sprintf((char *)err_buf,"out_type:%d", (lua_type(L, -1)));
+                char err_buf[255];
+                sprintf((char *)err_buf, "out_type:%d", (lua_type(L, -1)));
                 debuginfo(err_buf, __FILE__, __LINE__);
                 *out_len = 0;
                 return ERR_SCRIPT_RETURN_TYPE_INVAILD;
@@ -722,11 +719,9 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
 {
     lua_State *L = (lua_State *)lua;
     const char *err = NULL;
-    char err_buf[255];
     int ret = 0;
     int i = 0;
     int sharp = 0;
-    int status;
     tsg_lua_clfactory_buffer_t ls;
     jmp_buf *lua_exception;
 
@@ -786,7 +781,7 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
         {
             return ERR_SCRIPT_IS_BAD;
         }
-        status = tsg_lua_clfactory_bytecode_buffer_prepare(&ls);
+        int status = tsg_lua_clfactory_bytecode_buffer_prepare(&ls);
         if (status != 0)
         {
             return status;
@@ -868,13 +863,15 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
         int num = lua_gettop(L);
         if (num < 2)
         {
-            sprintf((char *)err_buf,"num:%d", num);
+            char err_buf[255];
+            sprintf((char *)err_buf, "num:%d", num);
             debuginfo(err_buf, __FILE__, __LINE__);
             return ERR_SCRIPT_RETURN_TOO_FEW;
         }
         if (num > 2)
         {
-            sprintf((char *)err_buf,"num:%d", num);
+            char err_buf[255];
+            sprintf((char *)err_buf, "num:%d", num);
             debuginfo(err_buf, __FILE__, __LINE__);
             return ERR_SCRIPT_RETURN_TOO_MUCH;
         }
@@ -896,12 +893,13 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
                 *out_type = BOOLEAN;
                 break;
             case LUA_TNUMBER:
-                *(long size_t *)out = lua_tointeger(L, -1);
+                *(size_t *)out = lua_tointeger(L, -1);
                 //*out_len = 8;
                 *out_type = INTEGER;
                 break;
             default:
-                sprintf((char *)err_buf,"out_type:%d", (lua_type(L, -1)));
+                char err_buf[255];
+                sprintf((char *)err_buf, "out_type:%d", (lua_type(L, -1)));
                 debuginfo(err_buf, __FILE__, __LINE__);
                 *out_len = 0;
                 return ERR_SCRIPT_RETURN_TYPE_INVAILD;
@@ -920,7 +918,7 @@ int tsg_lua_cache_script(tsg_lua_handle lua, const char *script, size_t script_l
     const char *err = NULL;
     int ret = 0;
     int i = 0;
-    int sharp = 0, status = 0;
+    int sharp = 0;
     lua_State *L = (lua_State *)lua;
 
     if (L == NULL)
@@ -967,7 +965,7 @@ int tsg_lua_cache_script(tsg_lua_handle lua, const char *script, size_t script_l
             return ERR_SCRIPT_IS_BAD;
         }
 
-        status = tsg_lua_clfactory_bytecode_buffer_prepare(&ls);
+        int status = tsg_lua_clfactory_bytecode_buffer_prepare(&ls);
         if (status != 0)
         {
             return status;
@@ -1037,7 +1035,6 @@ int tsg_lua_cache_script_file(tsg_lua_handle lua, const char *script)
     size_t script_id;
     const char *err = NULL;
     int ret = 0;
-    int i = 0;
     int sharp = 0;
     tsg_lua_clfactory_file_t lf;
     lua_State *L = (lua_State *)lua;
@@ -1078,7 +1075,7 @@ int tsg_lua_cache_script_file(tsg_lua_handle lua, const char *script)
         sharp = 1;
     }
 
-    if (c == LUA_SIGNATURE[0] && script)
+    if (c == LUA_SIGNATURE[0])
     {
         lf.f = freopen(script, "rb", lf.f);
         if (lf.f == NULL)
@@ -1090,11 +1087,7 @@ int tsg_lua_cache_script_file(tsg_lua_handle lua, const char *script)
         {
             /* 出于对安全的考虑，禁用字节码文件首行不是lua代码的文件
              * 这是因为，字节码文件首行不是lua代码会规避掉一些常规字节码检查 */
-            if(script)
-            {
-                fclose(lf.f);
-            }
-
+            fclose(lf.f);
             return ERR_SCRIPT_IS_BAD;
         }
 
@@ -1126,7 +1119,7 @@ int tsg_lua_cache_script_file(tsg_lua_handle lua, const char *script)
         {
             err = lua_tostring(L, -1);
             debuginfo(err, __FILE__, __LINE__);
-            for (i = 0; i < SYNTAX_ERROR_INFO_NUM; i++)
+            for (int i = 0; i < SYNTAX_ERROR_INFO_NUM; i++)
             {
                 if (strstr(err, syntax_error[i]))
                 {
@@ -1152,7 +1145,7 @@ int tsg_lua_cache_script_file(tsg_lua_handle lua, const char *script)
     {
         err = lua_tostring(L, -1);
         debuginfo(err, __FILE__, __LINE__);
-        for (i = 0; i < SYNTAX_ERROR_INFO_NUM; i++)
+        for (int i = 0; i < SYNTAX_ERROR_INFO_NUM; i++)
         {
             if (strstr(err, syntax_error[i]))
             {
@@ -1191,10 +1184,6 @@ int tsg_lua_uncache_script(tsg_lua_handle lua, size_t script_id)
 int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, size_t in_len, char *out, size_t *out_len, size_t *out_type)
 {
     lua_State *L = (lua_State *)lua;
-    const char *err;
-    char err_buf[255];
-    int i = 0;
-    int num = 0;
     jmp_buf *lua_exception;
 
     if (L == NULL)
@@ -1231,24 +1220,26 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
     {
         if (lua_pcall(L, 0, LUA_MULTRET, 0))
         {
-            err = lua_tostring(L, -1);
+            const char *err = lua_tostring(L, -1);
             debuginfo(err, __FILE__, __LINE__);
-            for (i = 0; i < EXEC_ERROR_INFO_NUM; i++)
+            for (int i = 0; i < EXEC_ERROR_INFO_NUM; i++)
             {
                 if ((strstr(err, exec_error[i].err_info1)) && (strstr(err, exec_error[i].err_info2))) 
                     return ERR_SCRIPT_EXEC_ERROR - (i + 1);
             }
             return ERR_SCRIPT_EXEC_ERROR;
         }
-        num = lua_gettop(L);
+        int num = lua_gettop(L);
         if (num < 2)
         {
+            char err_buf[255];
             sprintf((char *)err_buf,"num:%d", num);
             debuginfo(err_buf, __FILE__, __LINE__);
             return ERR_SCRIPT_RETURN_TOO_FEW;
         }
         if (num > 2)
         {
+            char err_buf[255];
             sprintf((char *)err_buf,"num:%d", num);
             debuginfo(err_buf, __FILE__, __LINE__);
             return ERR_SCRIPT_RETURN_TOO_MUCH;
@@ -1277,6 +1268,7 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
                 *out_type = INTEGER;
                 break; 
             default:
+                char err_buf[255];
                 sprintf((char *)err_buf,"out_type:%d", lua_type(L, -1));
                 debuginfo(err_buf, __FILE__, __LINE__);
                 *out_len = 0;
