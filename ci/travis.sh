@@ -57,8 +57,8 @@ if [ -n "${UPLOAD}" ]; then
 	python3 rpm_upload_tools.py ${PULP3_REPO_NAME} ${PULP3_DIST_NAME} *.rpm
 fi
 
-#if [ -n "${UPLOAD_SYMBOL_FILES}" ]; then
-#  rpm -i tfe*debuginfo*.rpm
-#  cp /usr/lib/debug/opt/tsg/tfe/bin/tfe.debug /tmp/tfe.debuginfo.${CI_COMMIT_SHORT_SHA}
-#  sentry-cli upload-dif -t elf /tmp/tfe.debuginfo.${CI_COMMIT_SHORT_SHA}
-#fi
+if [ -n "${UPLOAD_SYMBOL_FILES}" ]; then
+  rpm -i tfe*debuginfo*.rpm
+  cp /usr/lib/debug/opt/tsg/tfe/bin/tfe.debug /tmp/tfe.debuginfo.${CI_COMMIT_SHORT_SHA}
+  sentry-cli upload-dif -t elf /tmp/tfe.debuginfo.${CI_COMMIT_SHORT_SHA}
+fi

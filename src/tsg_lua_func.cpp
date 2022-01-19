@@ -695,7 +695,7 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
                 *out_type = BOOLEAN;
                 break;
             case LUA_TNUMBER:
-                *(long size_t *)out = lua_tointeger(L, -1);
+                *(long *)out = lua_tointeger(L, -1);
                 //*out_len = 8;
                 *out_type = INTEGER;
                 break;
