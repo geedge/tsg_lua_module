@@ -18,5 +18,6 @@ add_library(${lib_name}_shared SHARED ${DIR_LIB_SRCS})
 target_link_libraries(${lib_name}_shared dl luajit2-static)
 set_target_properties(${lib_name}_shared PROPERTIES OUTPUT_NAME ${lib_name})
 
-
 install(TARGETS ${lib_name}_shared LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib COMPONENT LIBRARIES)
+install(FILES ${CMAKE_SOURCE_DIR}/src/tsg_lua_interface.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/MESA COMPONENT HEADER)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/example/checktools/checktools.lua DESTINATION ${LUAJIT_INSTALL_PREFIX}/bin COMPONENT LIBRARIES)

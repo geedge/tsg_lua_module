@@ -36,7 +36,4 @@ add_subdirectory(src)
 enable_testing()
 add_subdirectory(gtest)
 
-install(FILES ./src/tsg_lua_interface.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/MESA COMPONENT HEADER)
-install(PROGRAMS ./example/checktools/checktools.lua DESTINATION ${LUAJIT_INSTALL_PREFIX}/bin)
-
 include(Package)
