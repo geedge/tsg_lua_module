@@ -184,6 +184,9 @@ static int tsg_lua_clfactory_bytecode_buffer_prepare(tsg_lua_clfactory_buffer_t 
 {
     int little_endian, version, stripped;
 
+    if (ls == NULL)
+        return -1;
+
     if (ls->file_type == TSG_LUA_BC_LJ)
     {
         /* get bytecode header */
@@ -724,6 +727,8 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
     int sharp = 0;
     tsg_lua_clfactory_buffer_t ls;
     jmp_buf *lua_exception;
+
+    memset(&ls, 0, sizeof(tsg_lua_clfactory_buffer_t));
 
     if (L == NULL)
     {
