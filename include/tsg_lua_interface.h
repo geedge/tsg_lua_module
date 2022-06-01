@@ -50,7 +50,7 @@ enum err_value
     ERR_SCRIPT_ID_INVAILD                       = -33,      /* 脚本ID无效 */
     ERR_LUA_CACHE_FAILED                        = -34,      /* 脚本缓存失败 */
     ERR_MEM_NOT_ENOUGH                          = -35,      /* 空间不足 */
-    ERR_LUA_ID					= -36,      /* lua id 错误*/
+    ERR_LUA_ID					                = -36,      /* lua id 错误*/
     ERR_UNKNOWN                                 = -37,      /* 未知错误 */
 };
 

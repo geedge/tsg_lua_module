@@ -423,7 +423,7 @@ static int c_lua_atpanic(lua_State *L)
     if (s == NULL)
     {
         s = (char *)"unknow reason";
-        len = sizeof(s);
+        len = strlen(s);
     }
     sprintf(err, "lua atpanic:lua VM creashed, reason:%*s\n", (int)len, s);
     debuginfo(err, __FILE__, __LINE__);
@@ -925,6 +925,7 @@ int tsg_lua_cache_script(tsg_lua_handle lua, const char *script, size_t script_l
     int i = 0;
     int sharp = 0;
     lua_State *L = (lua_State *)lua;
+    tsg_lua_clfactory_buffer_t ls;
 
     if (L == NULL)
     {
@@ -937,7 +938,7 @@ int tsg_lua_cache_script(tsg_lua_handle lua, const char *script, size_t script_l
         return ERR_SCRIPT_ISNULL;
     }
 
-    tsg_lua_clfactory_buffer_t ls;
+    memset(&ls, 0, sizeof(tsg_lua_clfactory_buffer_t));
     ls.s =  script;
     ls.size = script_len;
     ls.sent_begin = 0;
