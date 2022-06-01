@@ -310,3 +310,22 @@ TEST(tsg_lua_exec_bytecode, return_length_iszero)
     EXPECT_EQ(0, out_type);
     EXPECT_STREQ("", out);
 }
+
+TEST(tsg_lua_exec_bytecode, normal_return_string_sharp)
+{
+    tsg_lua_handle L = NULL;
+    char out[255];
+    size_t out_len = 0;
+    size_t out_type = 0;
+
+    L = tsg_lua_vm_create();
+    memset(out, 0, 255);
+    const char *script = get_script_buffer("./script/return_string_normal_sharp.luajit");
+    int ret = tsg_lua_exec(L, script, script_len, data, strlen(data), out, &out_len, &out_type);
+    
+    /* check */
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(11, out_len);
+    EXPECT_EQ(STRING, out_type);
+    EXPECT_STREQ("hello world", out);
+}

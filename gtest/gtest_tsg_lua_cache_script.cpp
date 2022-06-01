@@ -167,3 +167,15 @@ TEST(tsg_lua_cache_script, right_curly_bracket_expected)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_RIGHT_CURLY_BRACKET_EXPECTED, ret);
 }
+
+TEST(tsg_lua_cache_script, return_string_normal_sharp)
+{
+    tsg_lua_handle L = NULL;
+
+    L = tsg_lua_vm_create();
+    const char *script = get_script_buffer("./script/return_string_normal_sharp.lua");
+    int script_id = tsg_lua_cache_script(L, script, script_len);
+    
+    /* check */
+    EXPECT_EQ(1, script_id);
+}

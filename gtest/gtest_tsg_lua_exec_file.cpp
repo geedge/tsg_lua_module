@@ -482,3 +482,22 @@ TEST(tsg_lua_exec_file, function_invaild)
     EXPECT_STREQ("", out);
 }
 #endif
+
+TEST(tsg_lua_exec_file, normal_return_string_sharp)
+{
+    tsg_lua_handle L = NULL;
+    char out[255];
+    size_t out_len = 0;
+    size_t out_type = 0;
+
+    L = tsg_lua_vm_create();
+    const char *script = "./script/return_string_normal_sharp.lua";
+    memset(out, 0, 255);
+    int ret = tsg_lua_exec_file(L, script, data, strlen(data), out, &out_len, &out_type);
+    
+    /* check */
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(11, out_len);
+    EXPECT_EQ(STRING, out_type);
+    EXPECT_STREQ("hello world", out);
+}

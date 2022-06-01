@@ -12,7 +12,7 @@ TEST(tsg_lua_cache_script_bytecode_file, normal)
     tsg_lua_handle L = NULL;
 
     L = tsg_lua_vm_create();
-    const char *script = "./script/return_string_normal.lua";
+    const char *script = "./script/return_string_normal.luajit";
     int script_id = tsg_lua_cache_script_file(L, script);
     
     /* check */
@@ -23,7 +23,7 @@ TEST(tsg_lua_cache_script_bytecode_file, lua_vm_isnull)
 {
     tsg_lua_handle L = NULL;
 
-    const char *script = "./script/return_string_normal.lua";
+    const char *script = "./script/return_string_normal.luajit";
     int script_id = tsg_lua_cache_script_file(L, script);
     
     /* check */

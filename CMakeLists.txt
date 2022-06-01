@@ -32,6 +32,7 @@ endif()
 
 add_subdirectory(support) 
 add_subdirectory(src) 
+add_subdirectory(example)
 
 enable_testing()
 add_subdirectory(gtest)

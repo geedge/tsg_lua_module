@@ -64,8 +64,8 @@ int main()
         return -1;
     }
     printf("[C]:call tsg_lua_exec_file success.\n");
-    printf("[C]:out_len:%ld\n", out_len);
-    printf("[C]:out_type:%ld\n", out_type);
+    printf("[C]:out_len:%zu\n", out_len);
+    printf("[C]:out_type:%zu\n", out_type);
     switch(out_type)
     {
         case STRING:
@@ -88,8 +88,8 @@ int main()
         return -1;
     }
     printf("[C]:call tsg_lua_exec_file success.\n");
-    printf("[C]:out_len:%ld\n", out_len);
-    printf("[C]:out_type:%ld\n", out_type);
+    printf("[C]:out_len:%zu\n", out_len);
+    printf("[C]:out_type:%zu\n", out_type);
     switch(out_type)
     {
         case STRING:
@@ -124,8 +124,8 @@ int main()
         return -1;
     }
     printf("[C]: call tsg_lua_cache_exec success\n");
-    printf("[C]:out_len:%ld\n", out_len);
-    printf("[C]:out_type:%ld\n", out_type);
+    printf("[C]:out_len:%zu\n", out_len);
+    printf("[C]:out_type:%zu\n", out_type);
     switch(out_type)
     {
         case STRING:
@@ -159,8 +159,8 @@ int main()
         return -1;
     }
     printf("[C]: call tsg_lua_cache_exec success\n");
-    printf("[C]:out_len:%ld\n", out_len);
-    printf("[C]:out_type:%ld\n", out_type);
+    printf("[C]:out_len:%zu\n", out_len);
+    printf("[C]:out_type:%zu\n", out_type);
     switch(out_type)
     {
         case STRING:
@@ -186,8 +186,8 @@ int main()
         return -1;
     }
     printf("[C]: call tsg_lua_exec success ...\n");
-    printf("[C]:out_len:%ld\n", out_len);
-    printf("[C]:out_type:%ld\n", out_type);
+    printf("[C]:out_len:%zu\n", out_len);
+    printf("[C]:out_type:%zu\n", out_type);
     switch(out_type)
     {
         case STRING:
@@ -211,8 +211,8 @@ int main()
         return -1;
     }
     printf("[C]: call tsg_lua_exec success ...\n");
-    printf("[C]:out_len:%ld\n", out_len);
-    printf("[C]:out_type:%ld\n", out_type);
+    printf("[C]:out_len:%zu\n", out_len);
+    printf("[C]:out_type:%zu\n", out_type);
     switch(out_type)
     {
         case STRING:
@@ -245,8 +245,8 @@ int main()
         return -1;
     }
     printf("[C]: call tsg_lua_cache_exec success\n");
-    printf("[C]:out_len:%ld\n", out_len);
-    printf("[C]:out_type:%ld\n", out_type);
+    printf("[C]:out_len:%zu\n", out_len);
+    printf("[C]:out_type:%zu\n", out_type);
     switch(out_type)
     {
         case STRING:
@@ -279,8 +279,8 @@ int main()
         return -1;
     }
     printf("[C]: call tsg_lua_cache_exec success\n");
-    printf("[C]:out_len:%ld\n", out_len);
-    printf("[C]:out_type:%ld\n", out_type);
+    printf("[C]:out_len:%zu\n", out_len);
+    printf("[C]:out_type:%zu\n", out_type);
     switch(out_type)
     {
         case STRING:

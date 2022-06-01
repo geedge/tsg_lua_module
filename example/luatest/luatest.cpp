@@ -189,7 +189,7 @@ static int init_conf(char *path, conf_t *conf)
                 {   
                     break;
                 }
-                if ((sscanf(buf, "thread_num %d", &conf->thread_num) == EOF) || (conf->thread_num == 0))
+                if ((sscanf(buf, "thread_num %u", &conf->thread_num) == EOF) || (conf->thread_num == 0))
                 {
                     printf("error: conf_file: thread_num error\n");
                     return -1;
@@ -199,7 +199,7 @@ static int init_conf(char *path, conf_t *conf)
             case 'f':
                 if (!(conf->complete & FILE_TYPE_COMPLETE))
                 {
-                    ret =  sscanf(buf, "file_type %hhd", &conf->file_type);
+                    ret =  sscanf(buf, "file_type %hhu", &conf->file_type);
                     if ((ret !=0) && (ret != EOF))
                     {
                         conf->complete |= FILE_TYPE_COMPLETE;
@@ -209,7 +209,7 @@ static int init_conf(char *path, conf_t *conf)
 
                 if (!(conf->complete & FEATURE_COMPLETE))
                 {
-                    ret = sscanf(buf, "feature %s", conf->feature); 
+                    ret = sscanf(buf, "feature %1023s", conf->feature); 
                     if ((ret !=0 ) && (ret != EOF) && (strlen(conf->feature) != 0))
                     {
                         conf->complete |= FEATURE_COMPLETE;
@@ -222,7 +222,7 @@ static int init_conf(char *path, conf_t *conf)
                 {
                     break;
                 }
-                if ((sscanf(buf, "input %s", conf->input) == EOF) || strlen(conf->input) == 0)
+                if ((sscanf(buf, "input %127s", conf->input) == EOF) || strlen(conf->input) == 0)
                 {
                     printf("error: conf_file: input error\n");
                     return -1;
@@ -234,7 +234,7 @@ static int init_conf(char *path, conf_t *conf)
                 {
                     break;
                 }
-                if ((sscanf(buf, "script %s", conf->script) == EOF) || (strlen(conf->script) == 0))
+                if ((sscanf(buf, "script %127s", conf->script) == EOF) || (strlen(conf->script) == 0))
                 {
                     printf("error: conf_file: script error\n");
                     return -1;
@@ -246,7 +246,7 @@ static int init_conf(char *path, conf_t *conf)
                 {
                     break;
                 }
-                if ((sscanf(buf, "lib %s", conf->lib) == EOF) || (strlen(conf->lib) == 0))
+                if ((sscanf(buf, "lib %127s", conf->lib) == EOF) || (strlen(conf->lib) == 0))
                 {
                     printf("error: conf_file: lib error\n");
                     return -1;
@@ -339,7 +339,7 @@ void c_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_ch
     debuginfo_len = strlen(pcap_info->debuginfo);
     if (debuginfo_len < 9500)
     {
-        sprintf((char *)&pcap_info->debuginfo[debuginfo_len], "%-10s%-10ld%-11d%-11d%-20s%-20s%-20ld%-20ld\n", 
+        sprintf((char *)&pcap_info->debuginfo[debuginfo_len], "%-10s%-10zu%-11u%-11d%-20s%-20s%-20lu%-20lu\n", 
                 "C", pcap_info->thread_id, pcap_info->packet_num, pkthdr->caplen, pcap_info->feature, result, time, pcap_info->total_time);
     }
     return;
@@ -398,17 +398,13 @@ static void c_text_handle(c_text_info_t *text_info, char *debuginfo)
         file_name++;
     }
 
-    sprintf(&debuginfo[strlen(debuginfo)], "%-10s%-10ld%-20s%-20s%-20s%-20ld%-20ld\n", 
+    sprintf(&debuginfo[strlen(debuginfo)], "%-10s%-10zu%-20s%-20s%-20s%-20lu%-20lu\n", 
             "C", text_info->thread_id, file_name, text_info->feature, result, time, text_info->total_time);
     return;
 }
 
 static void c_pcap_prefix_handle(c_thread_info_t *thread_info, char *debuginfo, c_handle_function c_handle )
 {
-    char ebuf[PCAP_ERRBUF_SIZE];
-    c_pcap_info_t pcap_info;
-    pcap_t *pcap_handle;
-
     if ((thread_info == NULL) || (debuginfo == NULL) || (c_handle == NULL))
     {
         return ;
@@ -416,13 +412,15 @@ static void c_pcap_prefix_handle(c_thread_info_t *thread_info, char *debuginfo, 
     /* pcap 文件处理 */
     if (thread_info->file_type & pcap_type)
     {
-        pcap_handle = pcap_open_offline(thread_info->input, ebuf);
+        char ebuf[PCAP_ERRBUF_SIZE];
+        pcap_t *pcap_handle = pcap_open_offline(thread_info->input, ebuf);
         if (pcap_handle == NULL)
         {
             printf("input is error\n");
             return ;
         }
 
+        c_pcap_info_t pcap_info;
         pcap_info.feature = thread_info->feature;
         pcap_info.c_handle = c_handle;
         pcap_info.debuginfo = debuginfo;
@@ -443,7 +441,6 @@ static void *c_file_handle(void *ptr)
     char *debuginfo;
     void *lib_handle = NULL;
     c_handle_function c_handle; 
-    uint32_t i;
     struct stat s_buf;
     char file_name[100][256];
     c_text_info_t text_info;
@@ -486,7 +483,7 @@ static void *c_file_handle(void *ptr)
 
         if (thread_info->file_type & pcap_type)
         {
-            for ( i = 0; i < 100; i++)
+            for (uint32_t i = 0; i < 100; i++)
             {
                 if(file_name[i][0] == '\0')
                     break;
@@ -495,7 +492,7 @@ static void *c_file_handle(void *ptr)
             }
         }else
         {
-            for ( i = 0; i < 100; i++)
+            for (uint32_t i = 0; i < 100; i++)
             {
                 if(file_name[i][0] == '\0')
                     break;
@@ -585,7 +582,7 @@ void lua_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_
             sprintf(result, "%s", out[0] ? "true":"false");
             break;
         case INTEGER:
-            sprintf(result, "%ld", *(uint64_t *)out);
+            sprintf(result, "%lu", *(uint64_t *)out);
             break;
         default:
             break;
@@ -593,16 +590,13 @@ void lua_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_
     debuginfo_len = strlen(pcap_info->debuginfo);
     if (debuginfo_len < 9500)
     {
-        sprintf(&pcap_info->debuginfo[debuginfo_len], "%-10s%-10ld%-11d%-11d%-20s%-20s%-20ld%-20ld\n", 
+        sprintf(&pcap_info->debuginfo[debuginfo_len], "%-10s%-10zu%-11u%-11d%-20s%-20s%-20lu%-20lu\n", 
                 "LUA", pcap_info->thread_id, pcap_info->packet_num, pkthdr->caplen, pcap_info->feature, result, time, pcap_info->total_time);
     }
     return ;
 }
 static void lua_pcap_prefix_handle(lua_thread_info_t *thread_info, char *debuginfo, tsg_lua_handle L, size_t script_id)
 {
-    char ebuf[PCAP_ERRBUF_SIZE];
-    lua_pcap_info_t pcap_info;
-    pcap_t *pcap_handle;
 
     if ((thread_info == NULL) || (debuginfo == NULL) || (script_id < 1))
     {
@@ -611,13 +605,15 @@ static void lua_pcap_prefix_handle(lua_thread_info_t *thread_info, char *debugin
     /* pcap 文件处理 */
     if (thread_info->file_type & pcap_type)
     {
-        pcap_handle = pcap_open_offline(thread_info->input, ebuf);
+        char ebuf[PCAP_ERRBUF_SIZE];
+        pcap_t *pcap_handle = pcap_open_offline(thread_info->input, ebuf);
         if (pcap_handle == NULL)
         {
             printf("input is error\n");
             return ;
         }
 
+        lua_pcap_info_t pcap_info;
         pcap_info.L = L;
         pcap_info.feature = thread_info->feature;
         pcap_info.script_id = script_id;
@@ -694,7 +690,7 @@ static void lua_text_handle(lua_text_info_t *text_info, char *debuginfo, tsg_lua
             sprintf(result, "%s", out[0] ? "true":"false");
             break;
         case INTEGER:
-            sprintf(result, "%ld", *(uint64_t *)out);
+            sprintf(result, "%lu", *(uint64_t *)out);
             break;
         default:
             break;
@@ -708,7 +704,7 @@ static void lua_text_handle(lua_text_info_t *text_info, char *debuginfo, tsg_lua
         file_name++;
     }
 
-    sprintf(&debuginfo[strlen(debuginfo)], "%-10s%-10ld%-20s%-20s%-20s%-20ld%-20ld\n", 
+    sprintf(&debuginfo[strlen(debuginfo)], "%-10s%-10zu%-20s%-20s%-20s%-20lu%-20lu\n", 
             "lua", text_info->thread_id, file_name, text_info->feature, result, time, text_info->total_time);
 
     return ;
@@ -722,7 +718,6 @@ static void *lua_file_handle(void *ptr)
     tsg_lua_handle lua;
     char *debuginfo = NULL;
     lua_thread_info_t * thread_info = (lua_thread_info_t *)ptr;
-    uint32_t i;
     char result[512];
     lua_text_info_t text_info;
     struct stat s_buf;
@@ -768,7 +763,7 @@ static void *lua_file_handle(void *ptr)
 
         if (thread_info->file_type & pcap_type)
         {
-            for ( i = 0; i < 100; i++)
+            for (uint32_t i = 0; i < 100; i++)
             {
                 if(file_name[i][0] == '\0')
                     break;
@@ -777,7 +772,7 @@ static void *lua_file_handle(void *ptr)
             }
         }else
         {
-            for ( i = 0; i < 100; i++)
+            for (uint32_t i = 0; i < 100; i++)
             {
                 if(file_name[i][0] == '\0')
                     break;

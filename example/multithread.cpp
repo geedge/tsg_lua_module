@@ -21,7 +21,7 @@ extern "C"
 
 typedef struct lua_script_info_s{
     const char *script_data;
-    int script_len;
+    //int script_len;
     int script_id;
 }lua_script_info_t;
 
@@ -79,9 +79,9 @@ void *lua_function(void *ptr)
 
     lua_script_info_t script_info[MAX_SCRIPT_NUM] =
     {   
-        {SCRIPT_PROTOCOL_RECOGNITION, (int)strlen(SCRIPT_PROTOCOL_RECOGNITION), SCRIPT_NO_CACHE},   
-        {SCRIPT_COUNT_1, (int)strlen(SCRIPT_COUNT_1), SCRIPT_NO_CACHE},   
-        {SCRIPT_MATCH_12345, (int)strlen(SCRIPT_MATCH_12345), SCRIPT_NO_CACHE},   
+        {SCRIPT_PROTOCOL_RECOGNITION, SCRIPT_NO_CACHE},   
+        {SCRIPT_COUNT_1, SCRIPT_NO_CACHE},   
+        {SCRIPT_MATCH_12345, SCRIPT_NO_CACHE},   
     };
 
     printf("[C][thread_id:%d]:tsg_lua_vm_create start...\n", thread_id);
@@ -178,12 +178,12 @@ int main(int argc, char *argv[])
 {
     int thread_num;
     pthread_t thread[MAX_THREAD_NUM] = {0};
-    tsg_lua_handle lua[MAX_THREAD_NUM] = {0};
+    //tsg_lua_handle lua[MAX_THREAD_NUM] = {0};
     int thread_sum;
     int ch, i;
     char buf[1024];
     int buf_len;
-    userdata_t userdata[MAX_THREAD_NUM] = {0};
+    userdata_t userdata[MAX_THREAD_NUM];
     lua_data_t *data = NULL;
     char *retval;
 
@@ -192,6 +192,7 @@ int main(int argc, char *argv[])
 #endif
 
     /* default */
+    bzero(userdata, sizeof(userdata_t) * MAX_THREAD_NUM);
     thread_sum = 3;
     strcpy(buf, "this is tcp");
     buf_len =  strlen("this is tcp");
@@ -253,8 +254,8 @@ int main(int argc, char *argv[])
         data->data_len = buf_len;
         data->data[buf_len] = thread_num;
         data->data_len++;
-        lua[i] = tsg_lua_vm_create();
-        data->lua = lua[i];
+        //lua[thread_num] = tsg_lua_vm_create();
+        //data->lua = lua[i];
         pthread_create(&thread[thread_num], NULL, lua_function, (void *)&userdata[thread_num]);
     }
 
