@@ -8,6 +8,7 @@
 
 enum type
 {
+    NIL = 0,
     STRING = 1,
     INTEGER,
     BOOLEAN,
@@ -50,8 +51,11 @@ enum err_value
     ERR_SCRIPT_ID_INVAILD                       = -33,      /* 脚本ID无效 */
     ERR_LUA_CACHE_FAILED                        = -34,      /* 脚本缓存失败 */
     ERR_MEM_NOT_ENOUGH                          = -35,      /* 空间不足 */
-    ERR_LUA_ID					= -36,      /* lua id 错误*/
-    ERR_UNKNOWN                                 = -37,      /* 未知错误 */
+    ERR_LUA_ID					                = -36,      /* lua id 错误*/
+    ERR_EXPECT_TYPE_IS_NIL                      = -37,      /* 预期脚本返回类型为空 */
+    ERR_UNKNOWN                                 = -38,      /* 未知错误 */
+    ERR_RETUNR_NIL                              = 1,        /* 脚本执行成功，但是返回空*/
+    ERR_RETURN_TYPE_NOT_MATCH_EXPECT            = 2,        /* 脚本执行成功，但是返回值类型与预期不符 */
 };
 
 typedef void* tsg_lua_handle;
@@ -70,7 +74,8 @@ tsg_lua_handle tsg_lua_vm_create();
  * 输出参数：
  *              char *out               输出结果
  *              size_t *out_len            输出结果的长度
- *              size_t *out_type           输出结果的类型
+ * 输入输出参数：
+ *              size_t *out_type           要求输入一个不为NIL的预期类型， 调用完成后会输出结果的类型
  * 返回值：     int                     成功，返回0；失败返回错误值err_value */
 int tsg_lua_exec(tsg_lua_handle L, const char *script, size_t script_len, const char *in, size_t in_len, char *out, size_t *out_len, size_t *out_type);
 
@@ -82,7 +87,8 @@ int tsg_lua_exec(tsg_lua_handle L, const char *script, size_t script_len, const 
  * 输出参数：
  *              char *out               输出结果
  *              size_t *out_len            输出结果的长度
- *              size_t *out_type           输出结果的类型
+ * 输入输出参数：
+ *              size_t *out_type           要求输入一个不为NIL的预期类型， 调用完成后会输出结果的类型
  * 返回值：     int                     成功，返回0；失败返回错误值err_value */
 int tsg_lua_exec_file(tsg_lua_handle L, const char *script, const char *in, size_t in_len, char *out, size_t *out_len, size_t *out_type);
 
@@ -114,7 +120,8 @@ int tsg_lua_uncache_script(tsg_lua_handle L, size_t script_id);
  *              size_t in_len                  输入待处理的数据的长度
  * 输出参数：   char *out                   输出结果
  *              size_t *out_len                输出结果的长度
- *              size_t *out_type               输出结果的类型
+ * 输入输出参数：
+ *              size_t *out_type           要求输入一个不为NIL的预期类型， 调用完成后会输出结果的类型
  * 返回值：     int                         成功，返回0；失败,返回错误值err_value */
 int tsg_lua_cache_exec(tsg_lua_handle L, size_t script_id, const char *in, size_t in_len, char *out, size_t *out_len, size_t *out_type);
 

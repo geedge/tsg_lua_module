@@ -8,6 +8,7 @@
 
 enum type
 {
+    NIL = 0,
     STRING = 1,
     INTEGER,
     BOOLEAN,
@@ -70,7 +71,8 @@ tsg_lua_handle tsg_lua_vm_create();
  * 输出参数：
  *              char *out               输出结果
  *              size_t *out_len            输出结果的长度
- *              size_t *out_type           输出结果的类型
+ * 输入输出参数：
+ *              size_t *out_type           要求输入一个不为NIL的预期类型， 调用完成后会输出结果的类型
  * 返回值：     int                     成功，返回0；失败返回错误值err_value */
 int tsg_lua_exec(tsg_lua_handle L, const char *script, size_t script_len, const char *in, size_t in_len, char *out, size_t *out_len, size_t *out_type);
 
@@ -82,7 +84,8 @@ int tsg_lua_exec(tsg_lua_handle L, const char *script, size_t script_len, const 
  * 输出参数：
  *              char *out               输出结果
  *              size_t *out_len            输出结果的长度
- *              size_t *out_type           输出结果的类型
+ * 输入输出参数：
+ *              size_t *out_type           要求输入一个不为NIL的预期类型， 调用完成后会输出结果的类型
  * 返回值：     int                     成功，返回0；失败返回错误值err_value */
 int tsg_lua_exec_file(tsg_lua_handle L, const char *script, const char *in, size_t in_len, char *out, size_t *out_len, size_t *out_type);
 
@@ -114,7 +117,8 @@ int tsg_lua_uncache_script(tsg_lua_handle L, size_t script_id);
  *              size_t in_len                  输入待处理的数据的长度
  * 输出参数：   char *out                   输出结果
  *              size_t *out_len                输出结果的长度
- *              size_t *out_type               输出结果的类型
+ * 输入输出参数：
+ *              size_t *out_type           要求输入一个不为NIL的预期类型， 调用完成后会输出结果的类型
  * 返回值：     int                         成功，返回0；失败,返回错误值err_value */
 int tsg_lua_cache_exec(tsg_lua_handle L, size_t script_id, const char *in, size_t in_len, char *out, size_t *out_len, size_t *out_type);
 

@@ -14,7 +14,7 @@ TEST(tsg_lua_exec_file, normal_return_string)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/return_string_normal.lua";
@@ -33,7 +33,7 @@ TEST(tsg_lua_exec_file, normal_return_boolean)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = BOOLEAN;
     L = tsg_lua_vm_create();
     const char *script = "./script/return_boolean_normal.lua";
     memset(out, 0, 255);
@@ -51,7 +51,7 @@ TEST(tsg_lua_exec_file, normal_return_integer)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = INTEGER;
     L = tsg_lua_vm_create();
     const char *script = "./script/return_integer_normal.lua";
     memset(out, 0, 255);
@@ -69,7 +69,7 @@ TEST(tsg_lua_exec_file, lua_vm_isnull)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
     
     const char *script = "./script/return_string_normal.lua";
     memset(out, 0, sizeof(out));
@@ -78,7 +78,7 @@ TEST(tsg_lua_exec_file, lua_vm_isnull)
     /* check */
     EXPECT_EQ(ERR_LUAVM_ISNULL, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -87,7 +87,7 @@ TEST(tsg_lua_exec_file, script_isnull)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
     L = tsg_lua_vm_create();
     const char *script = NULL;
     memset(out, 0, 255);
@@ -96,7 +96,7 @@ TEST(tsg_lua_exec_file, script_isnull)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_ISNULL, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -105,7 +105,7 @@ TEST(tsg_lua_exec_file, input_isnull)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
     char *input = NULL;
 
     L = tsg_lua_vm_create();
@@ -116,7 +116,7 @@ TEST(tsg_lua_exec_file, input_isnull)
     /* check */
     EXPECT_EQ(ERR_INPUT_ISNULL, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -125,7 +125,7 @@ TEST(tsg_lua_exec_file, in_len_invaild)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/return_string_normal.lua";
@@ -135,7 +135,7 @@ TEST(tsg_lua_exec_file, in_len_invaild)
     /* check */
     EXPECT_EQ(ERR_IN_LEN_INVAILD, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -144,7 +144,7 @@ TEST(tsg_lua_exec_file, end_expected)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/end_expected.lua";
@@ -154,7 +154,7 @@ TEST(tsg_lua_exec_file, end_expected)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_END_EXPECTED, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -163,7 +163,7 @@ TEST(tsg_lua_exec_file, then_expected)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/then_expected.lua";
@@ -173,7 +173,7 @@ TEST(tsg_lua_exec_file, then_expected)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_THEN_EXPECTED, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -182,7 +182,7 @@ TEST(tsg_lua_exec_file, do_expected)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/do_expected.lua";
@@ -192,7 +192,7 @@ TEST(tsg_lua_exec_file, do_expected)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_DO_EXPECTED, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -201,7 +201,7 @@ TEST(tsg_lua_exec_file, eof_expected)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/eof_expected.lua";
@@ -211,7 +211,7 @@ TEST(tsg_lua_exec_file, eof_expected)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_EOF_EXPECTED, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -220,7 +220,7 @@ TEST(tsg_lua_exec_file, equal_in_expected)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/equal_in_expected.lua";
@@ -230,7 +230,7 @@ TEST(tsg_lua_exec_file, equal_in_expected)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_EQUAL_IN_EXPECTED, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -239,7 +239,7 @@ TEST(tsg_lua_exec_file, unexpected_symbol)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/unexpected_symbol.lua";
@@ -249,7 +249,7 @@ TEST(tsg_lua_exec_file, unexpected_symbol)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_UNEXPECTED_SYMBOL, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -258,7 +258,7 @@ TEST(tsg_lua_exec_file, name_expected)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/name_expected.lua";
@@ -268,7 +268,7 @@ TEST(tsg_lua_exec_file, name_expected)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_NAME_EXPECTED, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -277,7 +277,7 @@ TEST(tsg_lua_exec_file, right_curves_bracket_expected)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/right_curves_bracket_expected.lua";
@@ -287,7 +287,7 @@ TEST(tsg_lua_exec_file, right_curves_bracket_expected)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_RIGHT_CURVES_BRACKET_EXPECTED, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -296,7 +296,7 @@ TEST(tsg_lua_exec_file, right_curly_bracket_expected)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/right_curly_bracket_expected.lua";
@@ -306,7 +306,7 @@ TEST(tsg_lua_exec_file, right_curly_bracket_expected)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_RIGHT_CURLY_BRACKET_EXPECTED, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -315,7 +315,7 @@ TEST(tsg_lua_exec_file, string_expected_but_nil)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/string_expected_but_nil.lua";
@@ -325,7 +325,7 @@ TEST(tsg_lua_exec_file, string_expected_but_nil)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_STRING_EXPECTED_BUT_NIL, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -334,7 +334,7 @@ TEST(tsg_lua_exec_file, string_expected_but_boolean)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/string_expected_but_boolean.lua";
@@ -344,7 +344,7 @@ TEST(tsg_lua_exec_file, string_expected_but_boolean)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_STRING_EXPECTED_BUT_BOOL, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -353,7 +353,7 @@ TEST(tsg_lua_exec_file, string_expected_but_table)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/string_expected_but_table.lua";
@@ -363,7 +363,7 @@ TEST(tsg_lua_exec_file, string_expected_but_table)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_STRING_EXPECTED_BUT_TABLE, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -372,7 +372,7 @@ TEST(tsg_lua_exec_file, call_global_but_nil)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/call_global_but_nil.lua";
@@ -382,36 +382,36 @@ TEST(tsg_lua_exec_file, call_global_but_nil)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_CALL_GLOBAL_BUT_NIL, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
 
-TEST(tsg_lua_exec_file, return_too_few)
-{
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = 0;
+// TEST(tsg_lua_exec_file, return_too_few)
+// {
+//     tsg_lua_handle L = NULL;
+//     char out[255];
+//     size_t out_len = 0;
+//     size_t out_type = STRING;
 
-    L = tsg_lua_vm_create();
-    const char *script = "./script/return_too_few.lua";
-    memset(out, 0, 255);
-    int ret = tsg_lua_exec_file(L, script, data, strlen(data), out, &out_len, &out_type);
+//     L = tsg_lua_vm_create();
+//     const char *script = "./script/return_too_few.lua";
+//     memset(out, 0, 255);
+//     int ret = tsg_lua_exec_file(L, script, data, strlen(data), out, &out_len, &out_type);
     
-    /* check */
-    EXPECT_EQ(ERR_SCRIPT_RETURN_TOO_FEW, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
-    EXPECT_STREQ("", out);
-}
+//     /* check */
+//     EXPECT_EQ(ERR_SCRIPT_RETURN_TOO_FEW, ret);
+//     EXPECT_EQ(0, out_len);
+//     EXPECT_EQ(STRING, out_type);
+//     EXPECT_STREQ("", out);
+// }
 
 TEST(tsg_lua_exec_file, return_too_much)
 {
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/return_too_much.lua";
@@ -421,16 +421,16 @@ TEST(tsg_lua_exec_file, return_too_much)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_RETURN_TOO_MUCH, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 
-TEST(tsg_lua_exec_file, return_type_invaild)
+TEST(tsg_lua_exec_file, return_type_nil)
 {
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/return_type_invaild.lua";
@@ -438,9 +438,9 @@ TEST(tsg_lua_exec_file, return_type_invaild)
     int ret = tsg_lua_exec_file(L, script, data, strlen(data), out, &out_len, &out_type);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_RETURN_TYPE_INVAILD, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(ERR_RETUNR_NIL, ret);
+    EXPECT_EQ(5, out_len);
+    EXPECT_EQ(NIL, out_type);
     EXPECT_STREQ("", out);
 }
 
@@ -449,7 +449,7 @@ TEST(tsg_lua_exec_file, return_length_iszero)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/return_length_iszero.lua";
@@ -459,7 +459,7 @@ TEST(tsg_lua_exec_file, return_length_iszero)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_RETURN_LEN_INVAILD, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 #if 0
@@ -468,7 +468,7 @@ TEST(tsg_lua_exec_file, function_invaild)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/function_invaild.lua";
@@ -478,7 +478,7 @@ TEST(tsg_lua_exec_file, function_invaild)
     /* check */
     EXPECT_EQ(ERR_SCRIPT_FUNCTION_INVAILD, ret);
     EXPECT_EQ(0, out_len);
-    EXPECT_EQ(0, out_type);
+    EXPECT_EQ(STRING, out_type);
     EXPECT_STREQ("", out);
 }
 #endif
@@ -488,7 +488,7 @@ TEST(tsg_lua_exec_file, normal_return_string_sharp)
     tsg_lua_handle L = NULL;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     L = tsg_lua_vm_create();
     const char *script = "./script/return_string_normal_sharp.lua";

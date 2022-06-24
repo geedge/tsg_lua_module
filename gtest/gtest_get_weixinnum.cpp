@@ -36,7 +36,7 @@ TEST(tsg_lua_get_weixinnum, exec_cache_script)
     int data_len;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
     memset(out, 0, 255);
 
 	L = tsg_lua_vm_create();
@@ -59,7 +59,7 @@ TEST(tsg_lua_get_weixinnum, exec_cache_file)
     int data_len;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     memset(out, 0, 255);
 	L = tsg_lua_vm_create();
@@ -81,7 +81,7 @@ TEST(tsg_lua_get_weixinnum, exec_script)
     int data_len;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     memset(out, 0, 255);
 	L = tsg_lua_vm_create();
@@ -103,7 +103,7 @@ TEST(tsg_lua_get_weixinnum, exec_file)
     int data_len;
     char out[255];
     size_t out_len = 0;
-    size_t out_type = 0;
+    size_t out_type = STRING;
 
     memset(out, 0, 255);
 	L = tsg_lua_vm_create();

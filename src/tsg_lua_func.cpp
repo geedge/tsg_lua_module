@@ -513,6 +513,7 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
     int sharp = 0;
     tsg_lua_clfactory_file_t lf;
     jmp_buf *lua_exception;
+    int return_value = 0;
 
     if (L == NULL)
     {
@@ -535,6 +536,12 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
     {
         debuginfo("in_len is invailed", __FILE__, __LINE__);
         return ERR_IN_LEN_INVAILD;
+    }
+
+    if (out_type == NULL || *out_type < STRING || *out_type > BOOLEAN)
+    {
+        debuginfo("out_type is invailed", __FILE__, __LINE__);
+        return ERR_EXPECT_TYPE_IS_NIL;
     }
 
     lua_exception = (jmp_buf *)lua_getexdata(L);
@@ -666,41 +673,53 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
             return ERR_SCRIPT_EXEC_ERROR;
         }
         int num = lua_gettop(L);
-        if (num < 2)
+        if (num == 0)
         {
-            char err_buf[255];
-            sprintf((char *)err_buf,"num:%d", num);
-            debuginfo(err_buf, __FILE__, __LINE__);
-            return ERR_SCRIPT_RETURN_TOO_FEW;
+            //没有返回任何内容
+            debuginfo("script return nothing", __FILE__, __LINE__);
+            return ERR_RETURN_TYPE_NOT_MATCH_EXPECT;
         }
-        if (num > 2)
+        else if (num == 2)
+        {
+            *out_len = lua_tonumber(L, -2);
+            if (*out_len < 1)
+            {
+                debuginfo("script out_len is 0", __FILE__, __LINE__);
+                return ERR_SCRIPT_RETURN_LEN_INVAILD;
+            }
+        }
+        else if (num > 2)
         {
             char err_buf[255];
             sprintf((char *)err_buf,"num:%d", num);
             debuginfo(err_buf, __FILE__, __LINE__);
             return ERR_SCRIPT_RETURN_TOO_MUCH;
         }
-        *out_len = lua_tonumber(L, -2);
-        if (*out_len < 1)
+
+        size_t lua_ret_type = lua_type(L, -1);
+        size_t actual_out_type = NIL;
+
+        switch(lua_ret_type)
         {
-            debuginfo("script out_len is 0", __FILE__, __LINE__);
-            return ERR_SCRIPT_RETURN_LEN_INVAILD;
-        }
-        switch(lua_type(L, -1))
-        {
+            case LUA_TNIL:
+                debuginfo("script return nil", __FILE__, __LINE__);
+                actual_out_type = NIL;
+                *out_type = NIL;
+                return_value = ERR_RETUNR_NIL;
+                break;
             case LUA_TSTRING:
                 memcpy(out, lua_tostring(L, -1), *out_len);
-                *out_type = STRING;
+                actual_out_type = STRING;
                 break;
             case LUA_TBOOLEAN:
                 out[0] = lua_toboolean(L, -1);
-                //*out_len = 1;
-                *out_type = BOOLEAN;
+                *out_len = 1;
+                actual_out_type = BOOLEAN;
                 break;
             case LUA_TNUMBER:
                 *(long *)out = lua_tointeger(L, -1);
-                //*out_len = 8;
-                *out_type = INTEGER;
+                *out_len = 8;
+                actual_out_type = INTEGER;
                 break;
             default:
                 char err_buf[255];
@@ -709,12 +728,20 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
                 *out_len = 0;
                 return ERR_SCRIPT_RETURN_TYPE_INVAILD;
         }
+        if (actual_out_type != *out_type && actual_out_type != NIL)
+        {
+            char err_buf[255];
+            sprintf((char *)err_buf, "expect out_type is:%zu, actual out_type is:%zu", *out_type, actual_out_type);
+            debuginfo(err_buf, __FILE__, __LINE__);
+            *out_type = actual_out_type;
+            return_value = ERR_RETURN_TYPE_NOT_MATCH_EXPECT;
+        }
     }else
     {
         return ERR_SCRIPT_EXEC_ERROR;
     }
 
-    return 0;
+    return return_value;
 }
 
 
@@ -727,6 +754,7 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
     int sharp = 0;
     tsg_lua_clfactory_buffer_t ls;
     jmp_buf *lua_exception;
+    int return_value = 0;
 
     memset(&ls, 0, sizeof(tsg_lua_clfactory_buffer_t));
 
@@ -751,6 +779,12 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
     {
         debuginfo("in_len is invailed", __FILE__, __LINE__);
         return ERR_IN_LEN_INVAILD;
+    }
+
+    if (out_type == NULL || *out_type < STRING || *out_type > BOOLEAN)
+    {
+        debuginfo("out_type is invailed", __FILE__, __LINE__);
+        return ERR_EXPECT_TYPE_IS_NIL;
     }
 
     lua_exception = (jmp_buf *)lua_getexdata(L);
@@ -866,41 +900,53 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
             return ERR_SCRIPT_EXEC_ERROR;
         }
         int num = lua_gettop(L);
-        if (num < 2)
+        if (num == 0)
         {
-            char err_buf[255];
-            sprintf((char *)err_buf, "num:%d", num);
-            debuginfo(err_buf, __FILE__, __LINE__);
-            return ERR_SCRIPT_RETURN_TOO_FEW;
+            //没有返回任何内容
+            debuginfo("script return nothing", __FILE__, __LINE__);
+            return ERR_RETURN_TYPE_NOT_MATCH_EXPECT;
         }
-        if (num > 2)
+        else if (num == 2)
+        {
+            *out_len = lua_tonumber(L, -2);
+            if (*out_len < 1)
+            {
+                debuginfo("script out_len is 0", __FILE__, __LINE__);
+                return ERR_SCRIPT_RETURN_LEN_INVAILD;
+            }
+        }
+        else if (num > 2)
         {
             char err_buf[255];
             sprintf((char *)err_buf, "num:%d", num);
             debuginfo(err_buf, __FILE__, __LINE__);
             return ERR_SCRIPT_RETURN_TOO_MUCH;
         }
-        *out_len = lua_tonumber(L, -2);
-        if (*out_len < 1)
+
+        size_t lua_ret_type = lua_type(L, -1);
+        size_t actual_out_type = NIL;
+
+        switch(lua_ret_type)
         {
-            debuginfo("script out_len is 0", __FILE__, __LINE__);
-            return ERR_SCRIPT_RETURN_LEN_INVAILD;
-        }
-        switch(lua_type(L, -1))
-        {
+            case LUA_TNIL:
+                debuginfo("script return nil", __FILE__, __LINE__);
+                *out_type = NIL;
+                actual_out_type = NIL;
+                return_value = ERR_RETUNR_NIL;
+                break;
             case LUA_TSTRING:
                 memcpy(out, lua_tostring(L, -1), *out_len);
-                *out_type = STRING;
+                actual_out_type = STRING;
                 break;
             case LUA_TBOOLEAN:
                 out[0] = lua_toboolean(L, -1);
-                //*out_len = 1;
-                *out_type = BOOLEAN;
+                *out_len = 1;
+                actual_out_type = BOOLEAN;
                 break;
             case LUA_TNUMBER:
                 *(size_t *)out = lua_tointeger(L, -1);
-                //*out_len = 8;
-                *out_type = INTEGER;
+                *out_len = 8;
+                actual_out_type = INTEGER;
                 break;
             default:
                 char err_buf[255];
@@ -909,12 +955,20 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
                 *out_len = 0;
                 return ERR_SCRIPT_RETURN_TYPE_INVAILD;
         }
+
+        if (actual_out_type != *out_type &&  actual_out_type != NIL)
+        {
+            char err_buf[255];
+            sprintf((char *)err_buf, "expect out_type is:%zu, actual out_type is:%zu ", *out_type, actual_out_type);
+            debuginfo(err_buf, __FILE__, __LINE__);
+            return_value = ERR_RETURN_TYPE_NOT_MATCH_EXPECT;
+        }
     }else
     {
         return ERR_SCRIPT_EXEC_ERROR;
     }
 
-    return 0;
+    return return_value;
 }
 
 int tsg_lua_cache_script(tsg_lua_handle lua, const char *script, size_t script_len)
@@ -1191,6 +1245,7 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
 {
     lua_State *L = (lua_State *)lua;
     jmp_buf *lua_exception;
+    int return_value = 0;
 
     if (L == NULL)
     {
@@ -1211,6 +1266,11 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
     {
         debuginfo("in_len is invailed", __FILE__, __LINE__);
         return ERR_IN_LEN_INVAILD;
+    }
+    if (out_type == NULL || *out_type < STRING || *out_type > BOOLEAN)
+    {
+        debuginfo("out_type is invailed", __FILE__, __LINE__);
+        return ERR_EXPECT_TYPE_IS_NIL;
     }
 
     lua_settop(L, 0);
@@ -1236,14 +1296,22 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
             return ERR_SCRIPT_EXEC_ERROR;
         }
         int num = lua_gettop(L);
-        if (num < 2)
+        if (num == 0)
         {
-            char err_buf[255];
-            sprintf((char *)err_buf,"num:%d", num);
-            debuginfo(err_buf, __FILE__, __LINE__);
-            return ERR_SCRIPT_RETURN_TOO_FEW;
+            //没有返回任何内容
+            debuginfo("script return nothing", __FILE__, __LINE__);
+            return ERR_RETURN_TYPE_NOT_MATCH_EXPECT;
         }
-        if (num > 2)
+        else if (num == 2)
+        {
+            *out_len = lua_tonumber(L, -2);
+            if (*out_len < 1)
+            {
+                debuginfo("script out_len is 0", __FILE__, __LINE__);
+                return ERR_SCRIPT_RETURN_LEN_INVAILD;
+            }
+        }
+        else if (num > 2)
         {
             char err_buf[255];
             sprintf((char *)err_buf,"num:%d", num);
@@ -1251,27 +1319,30 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
             return ERR_SCRIPT_RETURN_TOO_MUCH;
         }
 
-        *out_len = lua_tonumber(L, -2);
-        if (*out_len < 1)
+        size_t lua_ret_type = lua_type(L, -1);
+        size_t actual_ret_type = 0;
+
+        switch(lua_ret_type)
         {
-            debuginfo("script out_len is 0", __FILE__, __LINE__);
-            return ERR_SCRIPT_RETURN_LEN_INVAILD;
-        }
-        switch(lua_type(L, -1))
-        {
+            case LUA_TNIL:
+                debuginfo("script return nil", __FILE__, __LINE__);
+                *out_type = NIL;
+                actual_ret_type = NIL;
+                return_value = ERR_RETUNR_NIL;
+                break;
             case LUA_TSTRING:
                 memcpy(out, lua_tostring(L, -1), *out_len);
-                *out_type = STRING;
-                break;   
+                actual_ret_type = STRING;
+                break;     
             case LUA_TBOOLEAN:
                 out[0] =  lua_toboolean(L, -1);
-                //*out_len = 1;
-                *out_type = BOOLEAN;
+                *out_len = 1;
+                actual_ret_type = BOOLEAN;
                 break;
             case LUA_TNUMBER:
                 *(size_t *)out = lua_tointeger(L, -1);
-                //*out_len = 8;
-                *out_type = INTEGER;
+                *out_len = 8;
+                actual_ret_type = INTEGER;
                 break; 
             default:
                 char err_buf[255];
@@ -1280,12 +1351,21 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
                 *out_len = 0;
                 return ERR_SCRIPT_RETURN_TYPE_INVAILD;
         }
+
+        if (actual_ret_type != *out_type && actual_ret_type != NIL)
+        {
+            char err_buf[255];
+            sprintf((char *)err_buf, "expect out_type is:%zu, actual out_type is:%zu ", *out_type, actual_ret_type);
+            debuginfo(err_buf, __FILE__, __LINE__);
+            return_value = ERR_RETURN_TYPE_NOT_MATCH_EXPECT;
+        }
+
     }else
     {
         return ERR_SCRIPT_EXEC_ERROR;
     }
 
-    return 0;
+    return return_value;
 }
 
 int tsg_destory_lua(tsg_lua_handle lua)

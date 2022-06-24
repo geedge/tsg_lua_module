@@ -18,23 +18,23 @@ local locate = 0 -- 字符串中当前正在处理的位置
 -- 查找字符串weixinnum位置
 local _start, _end = string.find(data, feature)
 if not _end then
-    return 1, false
+    return false
 end
 
 -- 获取weixinnum数值字符串长度
 -- weixinnum数值字符串长度不超过12，所以前三位必须为0
 if ((string.byte(data, _end + 1) ~= 0) or (string.byte(data, _end + 2) ~=0 ) or (string.byte(data, _end + 3) ~= 0)) then
-    return 1, false
+    return false
 end
 local weixinnum_len = string.byte(data, _end + offset)
 if not weixinnum_len then
-    return 1, false
+    return false
 end
 locate = _end + offset
 
 -- 判断weixinnum数值字符串长度的合法性
 if weixinnum_len > data_len - _end - offset  or weixinnum_len > max_weixinnum_len then
-    return 1, false
+    return false
 end
 
 -- 获取weixinnum数值字符串
@@ -43,5 +43,5 @@ local weixinnum = string.sub(data, locate + 1, locate + weixinnum_len)
 if tonumber(weixinnum) then
     return weixinnum_len, weixinnum
 else
-    return 1, false
+    return false
 end

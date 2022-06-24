@@ -27,28 +27,28 @@ end
 -- 命中特征"\0\0\0\0"
 local _, _end = string.find(data, "\0\0\0\0")
 if not _end then
-    return 1, false
+    return false
 end
 -- 获取qqnum长度
 local qqnum_len = string.byte(data, _end + 1)
 if not qqnum_len then
-    return 1,false
+    return false
 end
 locate = _end + 1
 qqnum_len = qqnum_len - 4
 -- 判断qqnum长度的合法性
 if qqnum_len > 12 or qqnum_len > (data_len - locate) then
-    return 1, false
+    return false
 end
 locate = locate + 1
 -- 获取qqnum
 local qqnum = string.sub(data, locate, locate +  qqnum_len - 1)
 if not qqnum then
-    return 1, false
+    return false
 end
 -- 验证qqnum由全数字组成
 if not tonumber(qqnum) then
-    return 1, false
+    return false
 end
 
 return qqnum_len, qqnum
