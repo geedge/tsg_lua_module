@@ -52,7 +52,10 @@ enum err_value
     ERR_LUA_CACHE_FAILED                        = -34,      /* 脚本缓存失败 */
     ERR_MEM_NOT_ENOUGH                          = -35,      /* 空间不足 */
     ERR_LUA_ID					                = -36,      /* lua id 错误*/
-    ERR_UNKNOWN                                 = -37,      /* 未知错误 */
+    ERR_EXPECT_TYPE_IS_NIL                      = -37,      /* 预期脚本返回类型为空 */
+    ERR_UNKNOWN                                 = -38,      /* 未知错误 */
+    ERR_RETUNR_NIL                              = 1,        /* 脚本执行成功，但是返回空*/
+    ERR_RETURN_TYPE_NOT_MATCH_EXPECT            = 2,        /* 脚本执行成功，但是返回值类型与预期不符 */
 };
 
 typedef void* tsg_lua_handle;
