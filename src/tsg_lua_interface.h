@@ -14,6 +14,35 @@ enum type
     BOOLEAN,
 };
 
+struct lua_arg_t
+{
+    int type;
+    int len; //仅当type == STRING时有效
+    union{
+        char *str;
+        long num;
+        bool flag;
+    };
+};
+
+struct lua_KV_t
+{
+    char *key;
+    char *value;
+};
+
+struct lua_multi_KV_t
+{
+    int KV_num;
+    struct lua_KV_t *KV;
+};
+
+struct lua_data_t
+{
+    size_t len;
+    char *data;
+};
+
 enum err_value
 {
     ERR_LUAVM_ISNULL                            = -1,       /* 输入虚拟机参数为空 */
@@ -130,4 +159,79 @@ int tsg_lua_cache_exec(tsg_lua_handle L, size_t script_id, const char *in, size_
  * 返回值：     int                         成功，返回0；失败返回错误值err_value */
 int tsg_destory_lua(tsg_lua_handle L);
 
+/* 函数名：     lua_poll_interactive_stack_param         
+ * 描述：       此函数用来获取当前C与LUA的交互栈的参数
+ * 输入参数：   tsg_lua_handle L           指定虚拟机
+ * 输入参数：   int  argc                   指定交互栈上应该返回多少个参数，参数个数不同，返回错误
+ * 输入输出参数：lua_arg_t *argv             指定交互栈上返回的参数类型，参数类型不同，返回错误，参数类型相同，会记录该类型值
+ * 返回值：     int                         成功，返回0；失败返回错误值err_value */
+int lua_poll_interactive_stack_param(tsg_lua_handle L, int argc, lua_arg_t *argv);
+
+/* 函数名：     lua_push_interactive_stack_param         
+ * 描述：       此函数用来获取当前C与LUA的交互栈的参数
+ * 输入参数：   tsg_lua_handle L            指定虚拟机
+ * 输入参数：   int  argc                   指定交互栈上应该返回多少个参数，参数个数不同，返回错误
+ * 输入参数：   lua_arg_t *argv             指定交互栈上返回的参数类型，参数类型不同，返回错误，参数类型相同，会记录该类型值
+ * 输入参数：   enum TYPE lua_type          将输入参数转换为指定类型并入到C与lua的交互栈上
+ * 返回值：     int                         成功，返回0；失败返回错误值err_value */
+int lua_push_interactive_stack_param(tsg_lua_handle L, int argc, lua_arg_t *argv, enum type lua_type);
+
+/* 函数名：     lua_get_userdata         
+ * 描述：       此函数用来获取exec系列函数设置的userdata
+ * 输入参数：   tsg_lua_handle L            指定虚拟机
+ * 返回值：     int                         成功，返回0；失败返回错误值err_value */
+void *lua_get_userdata(tsg_lua_handle L);
+
+typedef int (*lua_function_ptr)(tsg_lua_handle L);
+/* 函数名：     lua_register_function         
+ * 描述：       此函数用来注册函数给LUA使用
+ * 输入参数：   tsg_lua_handle L            指定虚拟机
+ * 输入参数：   const char *function_set    注册函数所属函数集
+ * 输入参数：   const char *function_name   注册函数的函数名
+ * 输入参数：   lua_function_ptr function   注册函数的函数指针
+ * 返回值：     int                         成功，返回0；失败返回 -1。*/
+int lua_register_function(tsg_lua_handle L, const char *function_set, const char *function_name, lua_function_ptr function);
+
+struct lua_script_context;
+/* 函数名：     lua_set_script_context         
+ * 输入参数：   tsg_lua_handle L  
+ * 输出参数：   lua_script_context *context_id          成功时返回lua context        
+ * 返回值：     int                                     成功，返回0；失败返回 -1*/
+int lua_set_script_context(tsg_lua_handle L, struct lua_script_context *context);
+
+/* 函数名：     lua_unset_script_context         
+ * 输入参数：   tsg_lua_handle L  
+ * 输出参数：   lua_script_context *context_id          成功时回收lua context        
+ * 返回值：     int                                     成功，返回0；失败返回 -1*/
+int lua_unset_script_context(tsg_lua_handle L, struct lua_script_context *context);
+
+/* 函数名：     lua_cache_exec_with_context         
+ * 输入参数：   tsg_lua_handle L  
+                size_t script_id                      缓存的脚本id
+                struct lua_data_t in                  待处理的数据
+                void *userdata                        set_function的callpback 使用的userdata
+                struct lua_script_context *context    lua上下文
+ * 输出参数：   struct lua_arg_t *outvalue             脚本执行成功返回的内容      
+ * 返回值：     int                                    成功，返回0；失败返回 -1*/
+int lua_cache_exec_with_context(tsg_lua_handle L, size_t script_id, struct lua_data_t in, void *userdata, lua_script_context *context, struct lua_arg_t *outvalue);
+
+/* 函数名：     lua_cache_exec_with_context         
+ * 输入参数：   tsg_lua_handle L  
+                struct lua_data_t script               lua脚本(lua脚本内容)
+                struct lua_data_t in                   待处理的数据
+                void *userdata                         set_function的callback 使用的userdata
+                struct lua_script_context *context     lua上下文
+ * 输出参数：   struct lua_arg_t *outvalue              脚本执行成功返回的内容      
+ * 返回值：     int                                     成功，返回0；失败返回 -1*/
+int lua_exec_with_context(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, void *userdata, lua_script_context *context, struct lua_arg_t *outvalue);
+
+/* 函数名：     lua_cache_exec_with_context         
+ * 输入参数：   tsg_lua_handle L  
+                struct script                           lua脚本(lua脚本路径)
+                struct lua_data_t in                    待处理的数据
+                void *userdata                          set_function的callback 使用的userdata
+                struct lua_script_context *context      lua上下文文
+ * 输出参数：   struct lua_arg_t *outvalue               脚本执行成功返回的内容      
+ * 返回值：     int                                      成功，返回0；失败返回 -1*/
+int lua_exec_file_with_context(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, void *userdata, lua_script_context *context, struct lua_arg_t *outvalue);
 #endif
