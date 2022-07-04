@@ -28,10 +28,10 @@ typedef struct lua_script_info_s{
 typedef struct lua_data_s{
     char data[1024];
     int data_len;
-}lua_data_t;
+}lua_test_data_t;
 
 typedef struct{
-    lua_data_t data;
+    lua_test_data_t data;
     int thread_id;
     tsg_lua_handle lua;
 }userdata_t;
@@ -74,7 +74,7 @@ void *lua_function(void *ptr)
     tsg_lua_handle L = NULL;
 
     userdata_t *userdata = (userdata_t *)ptr;
-    lua_data_t *data = &userdata->data;
+    lua_test_data_t *data = &userdata->data;
     int thread_id = userdata->thread_id;
 
     lua_script_info_t script_info[MAX_SCRIPT_NUM] =
@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
     char buf[1024];
     int buf_len;
     userdata_t userdata[MAX_THREAD_NUM];
-    lua_data_t *data = NULL;
+    lua_test_data_t *data = NULL;
     char *retval;
 
 #ifndef MIN

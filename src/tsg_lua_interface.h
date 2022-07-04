@@ -16,8 +16,8 @@ enum type
 
 struct lua_arg_t
 {
-    int type;
-    int len; //仅当type == STRING时有效
+    size_t type;
+    size_t len; //仅当type == STRING时有效
     union{
         char *str;
         long num;
@@ -82,12 +82,18 @@ enum err_value
     ERR_MEM_NOT_ENOUGH                          = -35,      /* 空间不足 */
     ERR_LUA_ID					                = -36,      /* lua id 错误*/
     ERR_EXPECT_TYPE_IS_NIL                      = -37,      /* 预期脚本返回类型为空 */
-    ERR_UNKNOWN                                 = -38,      /* 未知错误 */
+    ERR_LUA_FUNCTION_ARGC                       = -38,      /* lua 注册的C函数，调用时输入参数个数不匹配 */
+    ERR_LUA_FUNCTION_ARGV                       = -39,      /* lua 注册的C函数，调用时输入参数类型不匹配 */
+    ERR_PARAMETER                               = -40,      /* 参数错误 */
+    ERR_LUA_PRIVATE_INFO_IS_NIL                 = -41,      /* lua 私有信息为空 */
+    ERR_LUA_SET_CONTEXT_FAILED                  = -42,      /* lua 添加上下文失败 */
+    ERR_UNKNOWN                                 = -43,      /* 未知错误 */
     ERR_RETUNR_NIL                              = 1,        /* 脚本执行成功，但是返回空*/
     ERR_RETURN_TYPE_NOT_MATCH_EXPECT            = 2,        /* 脚本执行成功，但是返回值类型与预期不符 */
 };
 
-typedef void* tsg_lua_handle;
+struct lua_State;
+typedef lua_State* tsg_lua_handle;
 
 /* 函数名：tsg_lua_vm_create
  * 返回值：tsg_lua_handle  成功,返回一个虚拟机，
@@ -159,22 +165,13 @@ int tsg_lua_cache_exec(tsg_lua_handle L, size_t script_id, const char *in, size_
  * 返回值：     int                         成功，返回0；失败返回错误值err_value */
 int tsg_destory_lua(tsg_lua_handle L);
 
-/* 函数名：     lua_poll_interactive_stack_param         
- * 描述：       此函数用来获取当前C与LUA的交互栈的参数
- * 输入参数：   tsg_lua_handle L           指定虚拟机
- * 输入参数：   int  argc                   指定交互栈上应该返回多少个参数，参数个数不同，返回错误
- * 输入输出参数：lua_arg_t *argv             指定交互栈上返回的参数类型，参数类型不同，返回错误，参数类型相同，会记录该类型值
- * 返回值：     int                         成功，返回0；失败返回错误值err_value */
-int lua_poll_interactive_stack_param(tsg_lua_handle L, int argc, lua_arg_t *argv);
-
-/* 函数名：     lua_push_interactive_stack_param         
- * 描述：       此函数用来获取当前C与LUA的交互栈的参数
- * 输入参数：   tsg_lua_handle L            指定虚拟机
- * 输入参数：   int  argc                   指定交互栈上应该返回多少个参数，参数个数不同，返回错误
- * 输入参数：   lua_arg_t *argv             指定交互栈上返回的参数类型，参数类型不同，返回错误，参数类型相同，会记录该类型值
- * 输入参数：   enum TYPE lua_type          将输入参数转换为指定类型并入到C与lua的交互栈上
- * 返回值：     int                         成功，返回0；失败返回错误值err_value */
-int lua_push_interactive_stack_param(tsg_lua_handle L, int argc, lua_arg_t *argv, enum type lua_type);
+int c_pull_param_from_lua(tsg_lua_handle lua, int *argc, lua_arg_t **argv);
+int free_param_form_lua(int argc, lua_arg_t **argv);
+int c_push_num_into_lua(tsg_lua_handle lua, long num);
+int c_push_bool_into_lua(tsg_lua_handle lua, bool flag);
+int c_push_nil_into_lua(tsg_lua_handle lua);
+int c_push_string_into_lua(tsg_lua_handle lua, const char *str, size_t len);
+int c_push_table_into_lua(tsg_lua_handle lua, const char **key_list, const char **value_list, size_t list_len);
 
 /* 函数名：     lua_get_userdata         
  * 描述：       此函数用来获取exec系列函数设置的userdata
@@ -234,4 +231,10 @@ int lua_exec_with_context(tsg_lua_handle L, struct lua_data_t script, struct lua
  * 输出参数：   struct lua_arg_t *outvalue               脚本执行成功返回的内容      
  * 返回值：     int                                      成功，返回0；失败返回 -1*/
 int lua_exec_file_with_context(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, void *userdata, lua_script_context *context, struct lua_arg_t *outvalue);
+
+/* 函数名：tsg_lua_vm_create_with_name
+ * 返回值：tsg_lua_handle  成功,返回一个虚拟机，
+ * 输入参数： char *name    虚拟机名称，可以在lua中找到该名字的全局变量，建议大写字母开头。如果为空，默认填写"TSG"
+ *                          失败,返回NULL */
+tsg_lua_handle tsg_lua_vm_create_with_name(char *name);
 #endif

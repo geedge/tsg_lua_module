@@ -109,6 +109,13 @@ typedef struct{
     char buff[TSG_LUA_READER_BUFFSIZE];
 }tsg_lua_clfactory_file_t;
 
+struct lua_private_info_t
+{
+    jmp_buf *lua_exception;
+    char lua_name[1024];
+    void *userdata;
+};
+
 //static jmp_buf lua_exception[TSG_MAX_LUA_ID];
 
 static const char *syntax_error[] =
@@ -413,8 +420,10 @@ static int c_lua_atpanic(lua_State *L)
     char        err[255];
     size_t      len = 0;
     jmp_buf     *lua_exception;
+    struct lua_private_info_t *lua_info = NULL;
 
-    lua_exception = (jmp_buf *)lua_getexdata(L);
+    lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+    lua_exception = lua_info->lua_exception;
     if (lua_type(L, -1) == LUA_TSTRING)
     {
         s = (char *)lua_tolstring(L, -1, &len);
@@ -466,12 +475,23 @@ int tsg_lua_memmem(lua_State *L)
     return 2;
 }
 
-tsg_lua_handle tsg_lua_vm_create()
+tsg_lua_handle tsg_lua_vm_create_with_name(const char *name)
 {
+    if (name == NULL)
+    {
+        name = "TSG";
+    }
     lua_State *L;
     jmp_buf *lua_exception = (jmp_buf *)malloc(sizeof(jmp_buf));
     if (lua_exception == NULL)
     {
+        return NULL;
+    }
+    
+    struct lua_private_info_t *lua_info = (struct lua_private_info_t *)malloc(sizeof(struct lua_private_info_t));
+    if (lua_info == NULL)
+    {
+        free(lua_exception);
         return NULL;
     }
 
@@ -479,15 +499,21 @@ tsg_lua_handle tsg_lua_vm_create()
     if (L == NULL)
     {
         free(lua_exception);
+        free(lua_info);
         return NULL;
     }
-    lua_setexdata(L, lua_exception);
+    lua_info->lua_exception = lua_exception;
+    int len = strlen(name);
+    memcpy(lua_info->lua_name, name, MIN(1023, len));
+    lua_info->lua_name[len] = '\0';
+    lua_info->userdata = NULL;
+    lua_setexdata(L, lua_info);
     lua_atpanic(L, c_lua_atpanic);
     luaL_openlibs(L);
-    lua_createtable(L, 0, 2);
+    lua_newtable(L);
     lua_pushcfunction(L, tsg_lua_memmem);
     lua_setfield(L, -2, "memmem");
-    lua_setglobal(L, "TSG");
+    lua_setglobal(L, name);
 #if 1
     const char *code = "local ffi = require(\"ffi\")\n"\
                   "ffi.cdef[[char *memmem(const char *haystack, size_t haystacklen, const char *needle, size_t needlelen);]]\n"\
@@ -504,6 +530,11 @@ tsg_lua_handle tsg_lua_vm_create()
     return L;
 }
 
+tsg_lua_handle tsg_lua_vm_create()
+{
+    return tsg_lua_vm_create_with_name((const char *)NULL);
+}
+
 int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, size_t in_len, char *out, size_t *out_len, size_t *out_type)
 {
     lua_State *L = (lua_State *)lua;
@@ -513,6 +544,7 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
     int sharp = 0;
     tsg_lua_clfactory_file_t lf;
     jmp_buf *lua_exception;
+    struct lua_private_info_t *lua_info;
     int return_value = 0;
 
     if (L == NULL)
@@ -544,7 +576,8 @@ int tsg_lua_exec_file(tsg_lua_handle lua, const char *script, const char *in, si
         return ERR_EXPECT_TYPE_IS_NIL;
     }
 
-    lua_exception = (jmp_buf *)lua_getexdata(L);
+    lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+    lua_exception = lua_info->lua_exception;
 
     lf.extraline = 0;
     lf.sent_begin = 0;
@@ -753,6 +786,7 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
     int i = 0;
     int sharp = 0;
     tsg_lua_clfactory_buffer_t ls;
+    struct lua_private_info_t *lua_info = NULL;
     jmp_buf *lua_exception;
     int return_value = 0;
 
@@ -787,7 +821,8 @@ int tsg_lua_exec(tsg_lua_handle lua, const char *script, size_t script_len, cons
         return ERR_EXPECT_TYPE_IS_NIL;
     }
 
-    lua_exception = (jmp_buf *)lua_getexdata(L);
+    lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+    lua_exception = lua_info->lua_exception;
 
     ls.s =  script;
     ls.size = script_len;
@@ -1244,6 +1279,7 @@ int tsg_lua_uncache_script(tsg_lua_handle lua, size_t script_id)
 int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, size_t in_len, char *out, size_t *out_len, size_t *out_type)
 {
     lua_State *L = (lua_State *)lua;
+    struct lua_private_info_t *lua_info = NULL;
     jmp_buf *lua_exception;
     int return_value = 0;
 
@@ -1274,7 +1310,8 @@ int tsg_lua_cache_exec(tsg_lua_handle lua, size_t script_id, const char *in, siz
     }
 
     lua_settop(L, 0);
-    lua_exception = (jmp_buf *)lua_getexdata(L);
+    lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+    lua_exception = lua_info->lua_exception;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, script_id);
     lua_getglobal(L, "TSG");
@@ -1372,19 +1409,354 @@ int tsg_destory_lua(tsg_lua_handle lua)
 {
     lua_State *L = (lua_State *)lua;
     jmp_buf *lua_exception = NULL;
+    struct lua_private_info_t *lua_info = NULL;
 
     if (L == NULL)
     {
         debuginfo("lua VM is null.", __FILE__, __LINE__);
         return ERR_LUAVM_ISNULL;
     }
-    lua_exception = (jmp_buf *)lua_getexdata(L);
-    if (lua_exception != NULL)
+    lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+    if (lua_info != NULL)
     {
-        free(lua_exception);
+        if (lua_info->lua_exception != NULL)
+        {
+            free(lua_exception);
+        }
+        free(lua_info);
     }
 
     lua_close(L);
     return 0;
 }
 
+int c_pull_param_from_lua(tsg_lua_handle lua, int *argc, struct lua_arg_t **argv)
+{
+    lua_State *L = (lua_State *)lua;
+    if (L == NULL)
+    {
+        return ERR_PARAMETER;
+    }
+
+    *argc = lua_gettop(L);
+    if (*argc == 0)
+    {
+        *argv = NULL;
+        return 0;
+    }
+
+    *argv = (struct lua_arg_t *)calloc(*argc, sizeof(struct lua_arg_t));
+    // memset(argv, 0, argc * sizeof(struct lua_arg_t));
+
+    const char *str = NULL;
+    for (int i = 0; i < *argc; i++)
+    {
+        int type = lua_type(L, i - *argc);
+        switch (type)
+        {
+        case LUA_TBOOLEAN:
+            argv[i]->type = BOOLEAN;
+            argv[i]->flag = lua_toboolean(L, i - *argc);
+            break;
+        case LUA_TNUMBER:
+            argv[i]->type = INTEGER;
+            argv[i]->num = lua_tonumber(L, i - *argc);
+            break;
+        case LUA_TSTRING:
+            argv[i]->type = STRING;
+            str = lua_tostring(L, i - *argc);
+            argv[i]->len = strlen(str);
+            argv[i]->str = (char *)malloc(argv[i]->len+1);
+            memcpy(argv[i]->str, str, argv[i]->len);
+            argv[i]->str[argv[i]->len] = '\0';
+            break;
+        default:
+            return ERR_LUA_FUNCTION_ARGV;
+        }
+    }
+
+    return 0;
+}
+
+int free_param_form_lua(int argc, lua_arg_t **argv)
+{
+    if (argc == 0 || *argv == NULL)
+
+    for(int i = 0; i < argc; i++)
+    {
+        if (argv[i] == NULL)
+        {
+            continue;
+        }
+        if (argv[i]->type == STRING)
+        {
+            free(argv[i]->str);
+            argv[i]->str = NULL;
+        }
+    }
+
+    free(*argv);
+    *argv = NULL;
+
+    return 0;
+}
+
+int c_push_string_into_lua(tsg_lua_handle lua, const char *str, size_t len)
+{
+    lua_State *L = (lua_State *)lua;
+    if (L == NULL || str == NULL)
+    {
+        return ERR_PARAMETER;
+    }
+    
+    lua_pushlstring(L, str, len);
+    return 0;
+}
+
+int c_push_num_into_lua(tsg_lua_handle lua, long num)
+{
+    lua_State *L = (lua_State *)lua;
+    if (L == NULL )
+    {
+        return ERR_PARAMETER;
+    }
+    
+    lua_pushinteger(L, num);
+    return 0;
+}
+
+int c_push_bool_into_lua(tsg_lua_handle lua, bool flag)
+{
+    lua_State *L = (lua_State *)lua;
+    if (L == NULL)
+    {
+        return ERR_PARAMETER;
+    }
+    
+    lua_pushinteger(L, flag);
+    return 0;
+}
+
+int c_push_nil_into_lua(tsg_lua_handle lua)
+{
+    lua_State *L = (lua_State *)lua;
+    if (L == NULL)
+    {
+        return ERR_PARAMETER;
+    }
+    
+    lua_pushnil(L);
+    return 0;
+}
+
+int c_push_table_into_lua(tsg_lua_handle lua, const char **key_list, const char **value_list, size_t list_len)
+{
+    lua_State *L = (lua_State *)lua;
+    if (L == NULL || key_list == NULL || value_list == NULL)
+    {
+        return ERR_PARAMETER;
+    }
+    
+    lua_createtable(L, list_len, 0);
+    for (size_t i = 0; i < list_len; i++)
+    {
+        if (key_list[i] != NULL && value_list[i] != NULL)
+        {
+            // lua_pushliteral(L, key_list[i]);
+            // lua_pushliteral(L, value_list[i]);
+            lua_rawset(L, -3);
+        }
+    }
+
+    return 0;
+}
+
+void *lua_get_userdata(tsg_lua_handle L)
+{
+    struct lua_private_info_t * lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+    
+    if (lua_info != NULL)
+    {
+        return lua_info->lua_name;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+int lua_register_function(tsg_lua_handle lua, const char *function_set, const char *function_name, lua_function_ptr const function)
+{
+    lua_State *L = (lua_State *)lua;
+    if (L == NULL || function_set == NULL || function_name == NULL || function == NULL)
+    {
+        return ERR_PARAMETER;
+    }
+    struct lua_private_info_t *lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+    if (lua_info == NULL)
+    {
+        return ERR_LUA_PRIVATE_INFO_IS_NIL;
+    }
+
+    lua_getglobal(L, lua_info->lua_name);
+    lua_getfield(L, -1, function_set);
+    int ret = lua_type(L, -1);
+    if (ret != LUA_TTABLE)
+    {
+        lua_pop(L, 1);
+        lua_newtable(L);
+        lua_pushcfunction(L, function);
+        lua_setfield(L, -2, function_name);
+        lua_setfield(L, -2, function_set);
+    }
+    else
+    {
+        lua_pushcfunction(L, function);
+        lua_setfield(L, -2, function_name);
+    }
+    lua_settop(L, 0);
+
+    return 0;
+}
+
+struct lua_script_context
+{
+    int context_id;
+};
+int lua_set_script_context(tsg_lua_handle L, struct lua_script_context *context)
+{
+    if (L == NULL || context == NULL)
+    {
+        return ERR_PARAMETER;
+    }
+
+    lua_newtable(L);
+    int context_id = luaL_ref(L, LUA_REGISTRYINDEX);
+    if (context_id == LUA_REFNIL ||  context_id == LUA_NOREF)
+    {
+        return ERR_LUA_SET_CONTEXT_FAILED;
+    }
+    
+    // struct lua_private_info_t *lua_info = lua_getexdata(L);
+    // if (lua_info == NULL)
+    // {
+    //     return ERR_LUA_PRIVATE_INFO_IS_NIL;
+    // }
+
+    // lua_getglobal(L, lua_info->lua_name);
+    // lua_rawgeti(L, LUA_REGISTRYINDEX, context_id);
+    // lua_setfield(L, -2, "context");
+    lua_settop(L, 0);
+
+    context->context_id = context_id;
+    return 0;
+}
+
+int lua_unset_script_context(tsg_lua_handle L, struct lua_script_context *context)
+{
+    if (L == NULL)
+    {
+        debuginfo("lua VM is null.", __FILE__, __LINE__);
+        return ERR_LUAVM_ISNULL;
+    }
+    if (context == NULL)
+    {
+        return ERR_PARAMETER;
+    }
+
+    luaL_unref(L, LUA_REGISTRYINDEX, context->context_id);
+
+    return 0;
+}
+
+int lua_cache_exec_with_context(tsg_lua_handle L, size_t script_id, struct lua_data_t in, void *userdata, lua_script_context *context, struct lua_arg_t *outvalue)
+{
+    if (L == NULL)
+    {
+        debuginfo("lua VM is null.", __FILE__, __LINE__);
+        return ERR_LUAVM_ISNULL;
+    }
+
+    if (outvalue == NULL || in.data == NULL || in.len == 0)
+    {
+        return ERR_PARAMETER;
+    }
+
+    struct lua_private_info_t *lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+    if (lua_info == NULL)
+    {
+        return ERR_LUA_PRIVATE_INFO_IS_NIL;
+    }
+
+    if (context != NULL && context->context_id != LUA_REFNIL && context->context_id != LUA_NOREF)
+    {
+        lua_info->userdata = userdata;
+        lua_getglobal(L, lua_info->lua_name);
+        lua_rawgeti(L, LUA_REGISTRYINDEX, context->context_id);
+        lua_setfield(L, -2, "context");
+    }
+
+    return tsg_lua_cache_exec(L, script_id, in.data, in.len, outvalue->str, &outvalue->len, &outvalue->type);
+}
+
+int lua_exec_with_context(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, void *userdata, lua_script_context *context, struct lua_arg_t *outvalue)
+{
+    if (L == NULL)
+    {
+        debuginfo("lua VM is null.", __FILE__, __LINE__);
+        return ERR_LUAVM_ISNULL;
+    }
+
+    if (outvalue == NULL || in.data == NULL || in.len == 0 || script.data == NULL || script.len == 0)
+    {
+        return ERR_PARAMETER;
+    }
+
+    struct lua_private_info_t *lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+    if (lua_info == NULL)
+    {
+        return ERR_LUA_PRIVATE_INFO_IS_NIL;
+    }
+
+    lua_info->userdata = userdata;
+    if (context != NULL && context->context_id != LUA_REFNIL && context->context_id != LUA_NOREF)
+    {
+        lua_getglobal(L, lua_info->lua_name);
+        lua_rawgeti(L, LUA_REGISTRYINDEX, context->context_id);
+        lua_setfield(L, -2, "context");
+        lua_settop(L, 0);
+    }
+
+    return tsg_lua_exec(L, script.data, script.len,  in.data, in.len, outvalue->str, &outvalue->len, &outvalue->type);
+}
+
+int lua_exec_file_with_context(tsg_lua_handle L, const char *script, struct lua_data_t in, void *userdata, lua_script_context *context, struct lua_arg_t *outvalue)
+{
+    if (L == NULL)
+    {
+        debuginfo("lua VM is null.", __FILE__, __LINE__);
+        return ERR_LUAVM_ISNULL;
+    }
+
+    if (outvalue == NULL || in.data == NULL || in.len == 0 || script == NULL)
+    {
+        return ERR_PARAMETER;
+    }
+
+    struct lua_private_info_t *lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+    if (lua_info == NULL)
+    {
+        return ERR_LUA_PRIVATE_INFO_IS_NIL;
+    }
+
+    lua_info->userdata = userdata;
+    if (context != NULL && context->context_id != LUA_REFNIL && context->context_id != LUA_NOREF)
+    {
+        lua_getglobal(L, lua_info->lua_name);
+        lua_rawgeti(L, LUA_REGISTRYINDEX, context->context_id);
+        lua_setfield(L, -2, "context");
+        lua_settop(L, 0);
+    }
+
+    return tsg_lua_exec_file(L, script, in.data, in.len, outvalue->str, &outvalue->len, &outvalue->type);
+}
