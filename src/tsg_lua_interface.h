@@ -189,18 +189,19 @@ typedef int (*lua_function_ptr)(tsg_lua_handle L);
  * 返回值：     int                         成功，返回0；失败返回 -1。*/
 int lua_register_function(tsg_lua_handle L, const char *function_set, const char *function_name, lua_function_ptr function);
 
-struct lua_script_context;
+struct lua_script_context_t;
+typedef lua_script_context_t * lua_script_context;
 /* 函数名：     lua_set_script_context         
  * 输入参数：   tsg_lua_handle L  
- * 输出参数：   lua_script_context *context_id          成功时返回lua context        
+ * 输出参数：   lua_script_context **context          成功时返回lua context        
  * 返回值：     int                                     成功，返回0；失败返回 -1*/
-int lua_set_script_context(tsg_lua_handle L, struct lua_script_context *context);
+int lua_set_script_context(tsg_lua_handle L, lua_script_context *context);
 
 /* 函数名：     lua_unset_script_context         
  * 输入参数：   tsg_lua_handle L  
  * 输出参数：   lua_script_context *context_id          成功时回收lua context        
  * 返回值：     int                                     成功，返回0；失败返回 -1*/
-int lua_unset_script_context(tsg_lua_handle L, struct lua_script_context *context);
+int lua_unset_script_context(tsg_lua_handle L, lua_script_context context);
 
 /* 函数名：     lua_cache_exec_with_context         
  * 输入参数：   tsg_lua_handle L  
@@ -210,7 +211,7 @@ int lua_unset_script_context(tsg_lua_handle L, struct lua_script_context *contex
                 struct lua_script_context *context    lua上下文
  * 输出参数：   struct lua_arg_t *outvalue             脚本执行成功返回的内容      
  * 返回值：     int                                    成功，返回0；失败返回 -1*/
-int lua_cache_exec_with_context(tsg_lua_handle L, size_t script_id, struct lua_data_t in, void *userdata, lua_script_context *context, struct lua_arg_t *outvalue);
+int lua_cache_exec_with_context(tsg_lua_handle L, size_t script_id, struct lua_data_t in, void *userdata, lua_script_context context, struct lua_arg_t *outvalue);
 
 /* 函数名：     lua_cache_exec_with_context         
  * 输入参数：   tsg_lua_handle L  
@@ -220,7 +221,7 @@ int lua_cache_exec_with_context(tsg_lua_handle L, size_t script_id, struct lua_d
                 struct lua_script_context *context     lua上下文
  * 输出参数：   struct lua_arg_t *outvalue              脚本执行成功返回的内容      
  * 返回值：     int                                     成功，返回0；失败返回 -1*/
-int lua_exec_with_context(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, void *userdata, lua_script_context *context, struct lua_arg_t *outvalue);
+int lua_exec_with_context(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, void *userdata, lua_script_context context, struct lua_arg_t *outvalue);
 
 /* 函数名：     lua_cache_exec_with_context         
  * 输入参数：   tsg_lua_handle L  
@@ -230,11 +231,11 @@ int lua_exec_with_context(tsg_lua_handle L, struct lua_data_t script, struct lua
                 struct lua_script_context *context      lua上下文文
  * 输出参数：   struct lua_arg_t *outvalue               脚本执行成功返回的内容      
  * 返回值：     int                                      成功，返回0；失败返回 -1*/
-int lua_exec_file_with_context(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, void *userdata, lua_script_context *context, struct lua_arg_t *outvalue);
+int lua_exec_file_with_context(tsg_lua_handle L, const char *script, struct lua_data_t in, void *userdata, lua_script_context context, struct lua_arg_t *outvalue);
 
 /* 函数名：tsg_lua_vm_create_with_name
  * 返回值：tsg_lua_handle  成功,返回一个虚拟机，
  * 输入参数： char *name    虚拟机名称，可以在lua中找到该名字的全局变量，建议大写字母开头。如果为空，默认填写"TSG"
  *                          失败,返回NULL */
-tsg_lua_handle tsg_lua_vm_create_with_name(char *name);
+tsg_lua_handle tsg_lua_vm_create_with_name(const char *name);
 #endif
