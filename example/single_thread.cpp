@@ -8,7 +8,7 @@ extern "C"
     #include<stdio.h>
     #include<string.h>
 }
-#include"../include/tsg_lua_interface.h"
+#include"../src/tsg_lua_interface.h"
 char *content0 = (char *)"HanMeimei said \"hello\" to LiLei";
 char content1[255];
 

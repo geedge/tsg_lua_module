@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project (luatest)
 
-include_directories("../../include/")
+include_directories("../../src/")
 link_directories("${CMAKE_BINARY_DIR}/src")
 link_libraries(tsglua pthread dl)
 

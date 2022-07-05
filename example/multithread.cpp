@@ -12,7 +12,7 @@ extern "C"
     #include<unistd.h>
     #include<time.h>
 }
-#include"../include/tsg_lua_interface.h"
+#include"../src/tsg_lua_interface.h"
 #ifndef MAX_THREAD_NUM
 #define MAX_THREAD_NUM 9
 #endif
