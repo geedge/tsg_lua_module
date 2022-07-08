@@ -18,17 +18,17 @@ int set_world(tsg_lua_handle L)
     lua_arg_t *argv = NULL;
     
     c_pull_param_from_lua(L, &argc, &argv);
-    if (argc != 1 || argv == NULL || argv[0].type != STRING)
+    if (argc != 2 || argv == NULL || argv[0].type != STRING || argv[1].type != STRING)
     {
         return 0;
     }
 
-    char *buff = (char *)calloc(1, argv[0].len + strlen(" world.") + 1);
-    sprintf(buff, "%s%s", argv[0].str, " world.");
+    char *buff = (char *)calloc(2, argv[0].len + argv[1].len + 3);
+    sprintf(buff, "%s %s.", argv[0].str, argv[1].str);
     c_push_string_into_lua(L, buff, strlen(buff));
     free(buff);
     buff = NULL;
-    free_param_form_lua(argc, &argv);
+    free_param_form_lua(argc, argv);
 
     return 1;
 }

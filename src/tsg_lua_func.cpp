@@ -1440,7 +1440,7 @@ int c_pull_param_from_lua(tsg_lua_handle L, int *argc, struct lua_arg_t **argv)
         return 0;
     }
 
-    *argv = (struct lua_arg_t *)calloc(*argc, sizeof(struct lua_arg_t));
+    struct lua_arg_t *value = (struct lua_arg_t *)calloc(*argc, sizeof(struct lua_arg_t));
     // memset(argv, 0, argc * sizeof(struct lua_arg_t));
 
     const char *str = NULL;
@@ -1450,51 +1450,52 @@ int c_pull_param_from_lua(tsg_lua_handle L, int *argc, struct lua_arg_t **argv)
         switch (type)
         {
         case LUA_TBOOLEAN:
-            argv[i]->type = BOOLEAN;
-            argv[i]->flag = lua_toboolean(L, i - *argc);
+            value[i].type = BOOLEAN;
+            value[i].flag = lua_toboolean(L, i - *argc);
             break;
         case LUA_TNUMBER:
-            argv[i]->type = INTEGER;
-            argv[i]->num = lua_tonumber(L, i - *argc);
+            value[i].type = INTEGER;
+            value[i].num = lua_tonumber(L, i - *argc);
             break;
         case LUA_TSTRING:
-            argv[i]->type = STRING;
+            value[i].type = STRING;
             str = lua_tostring(L, i - *argc);
-            argv[i]->len = strlen(str);
-            argv[i]->str = (char *)malloc(argv[i]->len+1);
-            memcpy(argv[i]->str, str, argv[i]->len);
-            argv[i]->str[argv[i]->len] = '\0';
+            value[i].len = strlen(str);
+            value[i].str = (char *)malloc(value[i].len+1);
+            memcpy(value[i].str, str, value[i].len);
+            value[i].str[value[i].len] = '\0';
             break;
         default:
+            free_param_form_lua(*argc, value);
+            *argc  = 0;
+            *argv = NULL;
             return ERR_LUA_FUNCTION_ARGV;
         }
     }
 
+    *argv = value;
+
     return 0;
 }
 
-int free_param_form_lua(int argc, lua_arg_t **argv)
+int free_param_form_lua(int argc, lua_arg_t *argv)
 {
-    if (argc == 0 || *argv == NULL)
+    if (argc == 0 || argv == NULL)
     {
         return 0;
     }
 
     for(int i = 0; i < argc; i++)
     {
-        if (argv[i] == NULL)
+        if (argv[i].type == STRING)
         {
-            continue;
-        }
-        if (argv[i]->type == STRING)
-        {
-            free(argv[i]->str);
-            argv[i]->str = NULL;
+            free(argv[i].str);
+            argv[i].str = NULL;
         }
     }
 
-    free(*argv);
-    *argv = NULL;
+    free(argv);
+    //*argv = NULL;
 
     return 0;
 }

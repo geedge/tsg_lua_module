@@ -166,7 +166,7 @@ int tsg_lua_cache_exec(tsg_lua_handle L, size_t script_id, const char *in, size_
 int tsg_destory_lua(tsg_lua_handle L);
 
 int c_pull_param_from_lua(tsg_lua_handle lua, int *argc, lua_arg_t **argv);
-int free_param_form_lua(int argc, lua_arg_t **argv);
+int free_param_form_lua(int argc, lua_arg_t *argv);
 int c_push_num_into_lua(tsg_lua_handle lua, long num);
 int c_push_bool_into_lua(tsg_lua_handle lua, bool flag);
 int c_push_nil_into_lua(tsg_lua_handle lua);
