@@ -741,6 +741,7 @@ int tsg_lua_exec_file(tsg_lua_handle L, const char *script, const char *in, size
                 debuginfo("script return nil", __FILE__, __LINE__);
                 actual_out_type = NIL;
                 *out_type = NIL;
+                *out_len = 0;
                 return_value = ERR_RETUNR_NIL;
                 break;
             case LUA_TSTRING:

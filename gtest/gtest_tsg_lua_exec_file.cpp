@@ -439,7 +439,7 @@ TEST(tsg_lua_exec_file, return_type_nil)
     
     /* check */
     EXPECT_EQ(ERR_RETUNR_NIL, ret);
-    EXPECT_EQ(5, out_len);
+    EXPECT_EQ(0, out_len);
     EXPECT_EQ(NIL, out_type);
     EXPECT_STREQ("", out);
 }
