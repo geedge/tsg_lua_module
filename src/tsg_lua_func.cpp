@@ -620,8 +620,12 @@ int tsg_lua_exec_file(tsg_lua_handle L, const char *script, const char *in, size
         lf.file_type = TSG_LUA_BC_LJ; 
         if (sharp)
         {
-            /* 出于对安全的考虑，禁用字节码文件首行不是lua代码的文件
-             * 这是因为，字节码文件首行不是lua代码会规避掉一些常规字节码检查 */
+            /*
+             * Loading bytecode with an extra header is disabled for security
+             * reasons. This may circumvent the usual check for bytecode vs.
+             * Lua code by looking at the first char. Since this is a potential
+             * security violation no attempt is made to echo the chunkname either.
+             */
             fclose(lf.f);
             return ERR_SCRIPT_IS_BAD;
         }
@@ -691,7 +695,7 @@ int tsg_lua_exec_file(tsg_lua_handle L, const char *script, const char *in, size
         return ERR_SCRIPT_SYNTAX_ERROR;
     }
 
-    /* 输入待处理数据 */
+    /* input data waiting to be handled */
     lua_getglobal(L, lua_info->lua_name);
     lua_pushlstring(L, in, in_len);
     lua_setfield(L, -2, "data");
@@ -713,7 +717,7 @@ int tsg_lua_exec_file(tsg_lua_handle L, const char *script, const char *in, size
         int num = lua_gettop(L);
         if (num == 0)
         {
-            //没有返回任何内容
+            //return nothing
             debuginfo("script return nothing", __FILE__, __LINE__);
             return ERR_RETURN_TYPE_NOT_MATCH_EXPECT;
         }
@@ -854,7 +858,7 @@ int tsg_lua_exec(tsg_lua_handle L, const char *script, size_t script_len, const 
     }
     if (script[i] == LUA_SIGNATURE[0])
     {
-        /* 不会使用lua虚拟机， 使用的是luajit虚拟机 */
+        /* use luajit virtual machine rather then lua virtual machine */
         ls.file_type = TSG_LUA_BC_LJ;
         if (sharp)
         {
@@ -921,7 +925,7 @@ int tsg_lua_exec(tsg_lua_handle L, const char *script, size_t script_len, const 
         return ERR_SCRIPT_SYNTAX_ERROR;
     }
 
-    /* 输入待处理数据 */
+    /* input data waiting to be handled */
     lua_getglobal(L, lua_info->lua_name);
     lua_pushlstring(L, in, in_len);
     lua_setfield(L, -2, "data");
@@ -942,7 +946,7 @@ int tsg_lua_exec(tsg_lua_handle L, const char *script, size_t script_len, const 
         int num = lua_gettop(L);
         if (num == 0)
         {
-            //没有返回任何内容
+            //return nothing
             debuginfo("script return nothing", __FILE__, __LINE__);
             return ERR_RETURN_TYPE_NOT_MATCH_EXPECT;
         }
@@ -1057,7 +1061,7 @@ int tsg_lua_cache_script(tsg_lua_handle L, const char *script, size_t script_len
     }
     if (script[i] == LUA_SIGNATURE[0])
     {
-        /* 不会使用lua虚拟机， 使用的是luajit虚拟机 */
+        /* use luajit virtual machine rather then la virtual machine */
         ls.file_type = TSG_LUA_BC_LJ;
         if (sharp)
         {
@@ -1183,8 +1187,12 @@ int tsg_lua_cache_script_file(tsg_lua_handle L, const char *script)
         lf.file_type = TSG_LUA_BC_LJ;
         if (sharp)
         {
-            /* 出于对安全的考虑，禁用字节码文件首行不是lua代码的文件
-             * 这是因为，字节码文件首行不是lua代码会规避掉一些常规字节码检查 */
+            /*
+             * Loading bytecode with an extra header is disabled for security
+             * reasons. This may circumvent the usual check for bytecode vs.
+             * Lua code by looking at the first char. Since this is a potential
+             * security violation no attempt is made to echo the chunkname either.
+             */
             fclose(lf.f);
             return ERR_SCRIPT_IS_BAD;
         }
@@ -1335,7 +1343,7 @@ int tsg_lua_cache_exec(tsg_lua_handle L, size_t script_id, const char *in, size_
         int num = lua_gettop(L);
         if (num == 0)
         {
-            //没有返回任何内容
+            //return nothing
             debuginfo("script return nothing", __FILE__, __LINE__);
             return ERR_RETURN_TYPE_NOT_MATCH_EXPECT;
         }
@@ -1781,10 +1789,6 @@ int lua_get_error_code(tsg_lua_handle L)
     }
 
     struct lua_private_info_t *lua_info = (struct lua_private_info_t *)lua_getexdata(L);
-    if (lua_info == NULL)
-    {
-        retunr ERR_LUA_PRIVATE_INFO_IS_NIL;
-    }
 
     return lua_info->errcode;
 }
