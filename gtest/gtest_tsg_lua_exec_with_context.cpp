@@ -26,7 +26,7 @@ int get_userdata(tsg_lua_handle L)
 	return 1;
 }
 
-TEST(lua_exec_file_with_context, normal)
+TEST(lua_exec_file, normal)
 {
 	tsg_lua_handle L = tsg_lua_vm_create_with_name("TEST");
 	
@@ -42,8 +42,8 @@ TEST(lua_exec_file_with_context, normal)
 
 	lua_register_function(L, "get", "get_userdata", get_userdata);
 	lua_script_context context = NULL;
-	lua_set_script_context(L, &context);
-	int ret = lua_exec_file_with_context(L, script, in, (void *)ud, context, &out);
+	context = lua_script_context_malloc(L);
+	int ret = lua_exec_file(L, script, in, (void *)ud, context, &out);
 	const char *str = "userdata:hello world., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -52,7 +52,7 @@ TEST(lua_exec_file_with_context, normal)
 	bzero(out.str, 1024);
 
 	ud = "hello lua.";
-	ret = lua_exec_file_with_context(L, script, in, (void *)ud, context, &out);
+	ret = lua_exec_file(L, script, in, (void *)ud, context, &out);
 	str = "userdata:hello lua., context.count:2, context.message:This is not first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -61,8 +61,8 @@ TEST(lua_exec_file_with_context, normal)
 	bzero(out.str, 1024);
 
 	lua_script_context context2 = NULL;
-	lua_set_script_context(L, &context2);
-	ret = lua_exec_file_with_context(L, script, in, (void *)ud, context2, &out);
+	context2 = lua_script_context_malloc(L);
+	ret = lua_exec_file(L, script, in, (void *)ud, context2, &out);
 	str = "userdata:hello lua., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -70,13 +70,13 @@ TEST(lua_exec_file_with_context, normal)
 	EXPECT_STREQ(str, out.str);
 	bzero(out.str, 1024);
 
-	lua_unset_script_context(L, context);
-	lua_unset_script_context(L, context2);
+	lua_script_context_free(L, context);
+	lua_script_context_free(L, context2);
 	tsg_destory_lua(L);
 	free(out.str);
 }
 
-TEST(lua_exec_with_context, normal)
+TEST(lua_exec, normal)
 {
 	tsg_lua_handle L = tsg_lua_vm_create_with_name("TEST");
 	
@@ -94,8 +94,8 @@ TEST(lua_exec_with_context, normal)
 
 	lua_register_function(L, "get", "get_userdata", get_userdata);
 	lua_script_context context = NULL;
-	lua_set_script_context(L, &context);
-	int ret = lua_exec_with_context(L, script, in, (void *)ud, context, &out);
+	context = lua_script_context_malloc(L);
+	int ret = lua_exec(L, script, in, (void *)ud, context, &out);
 	const char *str = "userdata:hello world., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -104,7 +104,7 @@ TEST(lua_exec_with_context, normal)
 	bzero(out.str, 1024);
 
 	ud = "hello lua.";
-	ret = lua_exec_with_context(L, script, in, (void *)ud, context, &out);
+	ret = lua_exec(L, script, in, (void *)ud, context, &out);
 	str = "userdata:hello lua., context.count:2, context.message:This is not first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -113,8 +113,8 @@ TEST(lua_exec_with_context, normal)
 	bzero(out.str, 1024);
 
 	lua_script_context context2 = NULL;
-	lua_set_script_context(L, &context2);
-	ret = lua_exec_with_context(L, script, in, (void *)ud, context2, &out);
+	context2 = lua_script_context_malloc(L);
+	ret = lua_exec(L, script, in, (void *)ud, context2, &out);
 	str = "userdata:hello lua., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -122,13 +122,13 @@ TEST(lua_exec_with_context, normal)
 	EXPECT_STREQ(str, out.str);
 	bzero(out.str, 1024);
 
-	lua_unset_script_context(L, context);
-	lua_unset_script_context(L, context2);
+	lua_script_context_free(L, context);
+	lua_script_context_free(L, context2);
 	tsg_destory_lua(L);
 	free(out.str);
 }
 
-TEST(lua_cache_exec_with_context, normal)
+TEST(lua_cache_exec, normal)
 {
 	tsg_lua_handle L = tsg_lua_vm_create_with_name("TEST");
 	
@@ -145,8 +145,8 @@ TEST(lua_cache_exec_with_context, normal)
 
 	lua_register_function(L, "get", "get_userdata", get_userdata);
 	lua_script_context context = NULL;
-	lua_set_script_context(L, &context);
-	int ret = lua_cache_exec_with_context(L, script_id, in, (void *)ud, context, &out);
+	context = lua_script_context_malloc(L);
+	int ret = lua_cache_exec(L, script_id, in, (void *)ud, context, &out);
 	const char *str = "userdata:hello world., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -155,7 +155,7 @@ TEST(lua_cache_exec_with_context, normal)
 	bzero(out.str, 1024);
 
 	ud = "hello lua.";
-	ret = lua_cache_exec_with_context(L, script_id, in, (void *)ud, context, &out);
+	ret = lua_cache_exec(L, script_id, in, (void *)ud, context, &out);
 	str = "userdata:hello lua., context.count:2, context.message:This is not first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -164,8 +164,8 @@ TEST(lua_cache_exec_with_context, normal)
 	bzero(out.str, 1024);
 
 	lua_script_context context2 = NULL;
-	lua_set_script_context(L, &context2);
-	ret = lua_cache_exec_with_context(L, script_id, in, (void *)ud, context2, &out);
+	context2 = lua_script_context_malloc(L);
+	ret = lua_cache_exec(L, script_id, in, (void *)ud, context2, &out);
 	str = "userdata:hello lua., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -173,8 +173,8 @@ TEST(lua_cache_exec_with_context, normal)
 	EXPECT_STREQ(str, out.str);
 	bzero(out.str, 1024);
 
-	lua_unset_script_context(L, context);
-	lua_unset_script_context(L, context2);
+	lua_script_context_free(L, context);
+	lua_script_context_free(L, context2);
 	tsg_destory_lua(L);
 	free(out.str);
 }
