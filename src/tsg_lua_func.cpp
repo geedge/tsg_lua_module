@@ -1402,6 +1402,7 @@ int tsg_lua_cache_exec(tsg_lua_handle L, size_t script_id, const char *in, size_
             char err_buf[255];
             sprintf((char *)err_buf, "expect out_type is:%zu, actual out_type is:%zu ", *out_type, actual_ret_type);
             debuginfo(err_buf, __FILE__, __LINE__);
+            *out_type = actual_ret_type;
             return_value = ERR_RETURN_TYPE_NOT_MATCH_EXPECT;
         }
 
