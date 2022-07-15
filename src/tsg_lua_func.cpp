@@ -1709,12 +1709,13 @@ int lua_cache_exec(tsg_lua_handle L, size_t script_id, struct lua_data_t in, voi
         return ERR_LUA_PRIVATE_INFO_IS_NIL;
     }
 
+    lua_info->userdata = userdata;
     if (context != NULL && context->context_id != LUA_REFNIL && context->context_id != LUA_NOREF)
     {
-        lua_info->userdata = userdata;
         lua_getglobal(L, lua_info->lua_name);
         lua_rawgeti(L, LUA_REGISTRYINDEX, context->context_id);
         lua_setfield(L, -2, "context");
+        lua_settop(L, 0);
     }
 
     return tsg_lua_cache_exec(L, script_id, in.data, in.len, outvalue->str, &outvalue->len, &outvalue->type);
