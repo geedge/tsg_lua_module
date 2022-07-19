@@ -5,6 +5,7 @@
  ************************************************************************/
 #ifndef __TSG_LUA_INTERFACE__
 #define __TSG_LUA_INTERFACE__
+#include <stddef.h>
 
 enum type
 {
@@ -232,4 +233,6 @@ int lua_exec_file(tsg_lua_handle L, const char *script, struct lua_data_t in, vo
 tsg_lua_handle tsg_lua_vm_create_with_name(const char *name);
 
 int lua_get_error_code(tsg_lua_handle L);
+
+int lua_remove_cmd(tsg_lua_handle L, const char *cmd);
 #endif

@@ -1794,3 +1794,18 @@ int lua_get_error_code(tsg_lua_handle L)
 
     return lua_info->errcode;
 }
+
+int lua_remove_cmd(tsg_lua_handle L, const char *cmd)
+{
+    if (L == NULL || cmd == NULL)
+    {
+        return ERR_PARAMETER;
+    }
+
+    lua_pushnil(L);
+    lua_setglobal(L, cmd);
+
+    lua_settop(L, 0);
+
+    return 0;
+}
