@@ -86,7 +86,8 @@ enum err_value
     ERR_PARAMETER                               = -38,      /* Paramter error */
     ERR_LUA_PRIVATE_INFO_IS_NIL                 = -39,      /* The private info of lua is nil */
     ERR_LUA_SET_CONTEXT_FAILED                  = -40,      /* lua malloc context failed */
-    ERR_UNKNOWN                                 = -41,      /* Unkown */
+    ERR_SCRIPT_TIMEOUT                          = -41,      /* Time out */
+    ERR_UNKNOWN                                 = -42,      /* Unkown */
     ERR_RETUNR_NIL                              = 1,        /* Script run successed, but return a nil value*/
     ERR_RETURN_TYPE_NOT_MATCH_EXPECT            = 2,        /* Script run successed，but the type of return value does not match expection */
 };
@@ -203,9 +204,10 @@ int lua_script_context_free(tsg_lua_handle L, lua_script_context context);
  *                    struct lua_data_t in          data waiting to be handled
  *                    void *userdata                can get the userdata with lua_get_userdata(L)
  *                    lua_script_context context    Can accessed with lua-name.context in lua script
+ *                    size_t timeout_ms             Maximum time to run the script.if timeout_ms > 0, jit.off; timeout_ms == 0, jit.on, not expired.
  * output:            struct lua_arg_t *outvalue    Requires input of an expected type that is not NIL, the type of the result that will be output after the call is complete
  * return value:      int                           successed, return 0; failed, return error code */
-int lua_cache_exec(tsg_lua_handle L, size_t script_id, struct lua_data_t in, void *userdata, lua_script_context context, struct lua_arg_t *outvalue);
+int lua_cache_exec(tsg_lua_handle L, size_t script_id, struct lua_data_t in, void *userdata, lua_script_context context, size_t timeout_ms, struct lua_arg_t *outvalue);
 
 /* function name:     lua_exec   
  * input:             tsg_lua_handle L              a virtual machine
@@ -213,9 +215,10 @@ int lua_cache_exec(tsg_lua_handle L, size_t script_id, struct lua_data_t in, voi
  *                    struct lua_data_t in          data waiting to be handled
  *                    void *userdata                can get the userdata with lua_get_userdata(L)
  *                    lua_script_context context    Can accessed with lua-name.context in lua script
+ *                    size_t timeout_ms             Maximum time to run the script.if timeout_ms > 0, jit.off; timeout_ms == 0, jit.on, not expired.
  * output:            struct lua_arg_t *outvalue    Requires input of an expected type that is not NIL, the type of the result that will be output after the call is complete
  * return value:      int                           successed, return 0; failed, return error code */
-int lua_exec(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, void *userdata, lua_script_context context, struct lua_arg_t *outvalue);
+int lua_exec(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, void *userdata, lua_script_context context, size_t timeout_ms, struct lua_arg_t *outvalue);
 
 /* function name:     lua_exec_file   
  * input:             tsg_lua_handle L              a virtual machine
@@ -223,9 +226,10 @@ int lua_exec(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, v
  *                    struct lua_data_t in          data waiting to be handled
  *                    void *userdata                can get the userdata with lua_get_userdata(L)
  *                    lua_script_context context    Can accessed with lua-name.context in lua script
+ *                    size_t timeout_ms             Maximum time to run the script.if timeout_ms > 0, jit.off; timeout_ms == 0, jit.on, not expired.
  * output:            struct lua_arg_t *outvalue    Requires input of an expected type that is not NIL, the type of the result that will be output after the call is complete
  * return value:      int                           successed, return 0; failed, return error code */
-int lua_exec_file(tsg_lua_handle L, const char *script, struct lua_data_t in, void *userdata, lua_script_context context, struct lua_arg_t *outvalue);
+int lua_exec_file(tsg_lua_handle L, const char *script, struct lua_data_t in, void *userdata, lua_script_context context, size_t timeout_ms, struct lua_arg_t *outvalue);
 
 /* function name：      tsg_lua_vm_create
  * input:               char *name          the name of virtual machine, default: "TSG"
@@ -235,4 +239,6 @@ tsg_lua_handle tsg_lua_vm_create_with_name(const char *name);
 int lua_get_error_code(tsg_lua_handle L);
 
 int lua_remove_cmd(tsg_lua_handle L, const char *cmd);
+
+int lua_set_script_timeout(tsg_lua_handle L, int second);
 #endif

@@ -9,6 +9,7 @@ extern "C"
 #include<stdlib.h>
 #include<string.h>
 #include<setjmp.h>
+#include<time.h>
 #include "lualib.h"
 #include "luajit.h"
 #include "lauxlib.h"
@@ -115,6 +116,13 @@ struct lua_private_info_t
     char lua_name[1024];
     void *userdata;
     int errcode;
+    int tsg_lua_mode;
+#define TSG_LUA_JIT_ON 0
+#define TSG_LUA_JIT_OFF 1
+    long time_now;
+    long time_limit;
+    bool is_expired;    //not return error from C, when the script was ran in C and time out, 
+                        // keep this status and not return error until the script run in LUA
 };
 
 //static jmp_buf lua_exception[TSG_MAX_LUA_ID];
@@ -139,6 +147,13 @@ static exec_error_massage_t exec_error[] =
     {"bad argument", "(string expected, got table)"},   /* ERR_SCRIPT_STRING_EXPECTED_BUT_TABLE */
     {"attempt to call global", "(a nil value)"},        /* ERR_SCRIPT_CALL_GLOBAL_BUT_NIL */
 };
+
+static long mstime()
+{
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    return now.tv_sec * 1000 + now.tv_nsec/1000000;
+}
 
 static void debuginfo(const char *info, const char *file, size_t line) 
 {   
@@ -703,6 +718,10 @@ int tsg_lua_exec_file(tsg_lua_handle L, const char *script, const char *in, size
 
     if (setjmp(*lua_exception) == 0)
     {
+        if (lua_info->time_limit > 0)
+        {
+            lua_info->time_now = mstime();
+        }
         if (lua_pcall(L, 0, LUA_MULTRET, 0))
         {
             err = lua_tostring(L, -1);
@@ -711,6 +730,10 @@ int tsg_lua_exec_file(tsg_lua_handle L, const char *script, const char *in, size
             {
                 if ((strstr(err, exec_error[i].err_info1)) && (strstr(err, exec_error[i].err_info2))) 
                     return ERR_SCRIPT_EXEC_ERROR - (i + 1);
+            }
+            if (strcmp(err, "Lua script killed by time out.") == 0)
+            {
+                return ERR_SCRIPT_TIMEOUT; 
             }
             return ERR_SCRIPT_EXEC_ERROR;
         }
@@ -932,6 +955,10 @@ int tsg_lua_exec(tsg_lua_handle L, const char *script, size_t script_len, const 
     lua_settop(L, 1);
     if (setjmp(*lua_exception) == 0)
     {
+        if (lua_info->time_limit > 0)
+        {
+            lua_info->time_now = mstime();
+        }
         if (lua_pcall(L, 0, LUA_MULTRET, 0))
         {
             err = lua_tostring(L, -1);
@@ -940,6 +967,10 @@ int tsg_lua_exec(tsg_lua_handle L, const char *script, size_t script_len, const 
             {
                 if ((strstr(err, exec_error[i].err_info1)) && (strstr(err, exec_error[i].err_info2))) 
                     return ERR_SCRIPT_EXEC_ERROR - (i + 1);
+            }
+            if (strcmp(err, "Lua script killed by time out.") == 0)
+            {
+                return ERR_SCRIPT_TIMEOUT; 
             }
             return ERR_SCRIPT_EXEC_ERROR;
         }
@@ -1329,6 +1360,10 @@ int tsg_lua_cache_exec(tsg_lua_handle L, size_t script_id, const char *in, size_
 
     if (setjmp(*lua_exception) == 0)
     {
+        if (lua_info->time_limit > 0)
+        {
+            lua_info->time_now = mstime();
+        }
         if (lua_pcall(L, 0, LUA_MULTRET, 0))
         {
             const char *err = lua_tostring(L, -1);
@@ -1337,6 +1372,10 @@ int tsg_lua_cache_exec(tsg_lua_handle L, size_t script_id, const char *in, size_
             {
                 if ((strstr(err, exec_error[i].err_info1)) && (strstr(err, exec_error[i].err_info2))) 
                     return ERR_SCRIPT_EXEC_ERROR - (i + 1);
+            }
+            if (strcmp(err, "Lua script killed by time out.") == 0)
+            {
+                return ERR_SCRIPT_TIMEOUT; 
             }
             return ERR_SCRIPT_EXEC_ERROR;
         }
@@ -1690,7 +1729,7 @@ int lua_script_context_free(tsg_lua_handle L, struct lua_script_context_t *conte
     return 0;
 }
 
-int lua_cache_exec(tsg_lua_handle L, size_t script_id, struct lua_data_t in, void *userdata, lua_script_context context, struct lua_arg_t *outvalue)
+int lua_cache_exec(tsg_lua_handle L, size_t script_id, struct lua_data_t in, void *userdata, lua_script_context context, size_t timeout_ms, struct lua_arg_t *outvalue)
 {
     if (L == NULL)
     {
@@ -1718,10 +1757,19 @@ int lua_cache_exec(tsg_lua_handle L, size_t script_id, struct lua_data_t in, voi
         lua_settop(L, 0);
     }
 
+    if (timeout_ms > 0)
+    {
+        lua_set_script_timeout(L, timeout_ms);
+    }
+    else
+    {
+        luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_ON);
+    }
+
     return tsg_lua_cache_exec(L, script_id, in.data, in.len, outvalue->str, &outvalue->len, &outvalue->type);
 }
 
-int lua_exec(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, void *userdata, lua_script_context context, struct lua_arg_t *outvalue)
+int lua_exec(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, void *userdata, lua_script_context context, size_t timeout_ms, struct lua_arg_t *outvalue)
 {
     if (L == NULL)
     {
@@ -1749,10 +1797,19 @@ int lua_exec(tsg_lua_handle L, struct lua_data_t script, struct lua_data_t in, v
         lua_settop(L, 0);
     }
 
+    if (timeout_ms > 0)
+    {
+        lua_set_script_timeout(L, timeout_ms);
+    }
+    else
+    {
+        luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_ON);
+    }
+
     return tsg_lua_exec(L, script.data, script.len,  in.data, in.len, outvalue->str, &outvalue->len, &outvalue->type);
 }
 
-int lua_exec_file(tsg_lua_handle L, const char *script, struct lua_data_t in, void *userdata, lua_script_context context, struct lua_arg_t *outvalue)
+int lua_exec_file(tsg_lua_handle L, const char *script, struct lua_data_t in, void *userdata, lua_script_context context, size_t timeout_ms, struct lua_arg_t *outvalue)
 {
     if (L == NULL)
     {
@@ -1778,6 +1835,15 @@ int lua_exec_file(tsg_lua_handle L, const char *script, struct lua_data_t in, vo
         lua_rawgeti(L, LUA_REGISTRYINDEX, context->context_id);
         lua_setfield(L, -2, "context");
         lua_settop(L, 0);
+    }
+
+    if (timeout_ms > 0)
+    {
+        lua_set_script_timeout(L, timeout_ms);
+    }
+    else
+    {
+        luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_ON);
     }
 
     return tsg_lua_exec_file(L, script, in.data, in.len, outvalue->str, &outvalue->len, &outvalue->type);
@@ -1806,6 +1872,74 @@ int lua_remove_cmd(tsg_lua_handle L, const char *cmd)
     lua_setglobal(L, cmd);
 
     lua_settop(L, 0);
+
+    return 0;
+}
+
+static void luaMaskCountHook(tsg_lua_handle L, lua_Debug *ar)
+{
+    struct lua_private_info_t *lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+
+    if (lua_info->is_expired == true)
+    {
+        if (ar->what && memcmp(ar->what, "C", 1) == 0)
+        {
+            return;
+        }
+        else
+        {
+            lua_pushstring(L, "Lua script killed by time out.");
+            lua_error(L);
+            return;
+        }
+    }
+
+    long elapsed = mstime() - lua_info->time_now;
+    if ( lua_info->time_limit > 0 && elapsed > lua_info->time_limit)
+    {
+        //printf("elasped:%ld\n", elapsed);
+        if (ar->what && memcmp(ar->what, "C", 1) == 0)
+        {
+            lua_info->is_expired = true;
+            // reset the interval to a shorter time
+            int hook_granularity = lua_info->time_limit * 1000000 / 1000; //about time_limt / 1000
+            lua_sethook(L, luaMaskCountHook, LUA_MASKCOUNT, hook_granularity);
+        }
+        else
+        {
+            lua_pushstring(L, "Lua script killed by time out.");
+            lua_error(L);
+        }
+    }
+}
+
+int lua_set_script_timeout(tsg_lua_handle L, int ms)
+{
+    if (L == NULL || ms < 0)
+    {
+        return ERR_PARAMETER;
+    }
+
+    struct lua_private_info_t *lua_info = (struct lua_private_info_t *)lua_getexdata(L);
+    if (lua_info == NULL)
+    {
+        return ERR_LUA_PRIVATE_INFO_IS_NIL;
+    }
+
+    lua_info->time_limit = ms;
+    if (ms == 0)
+    {
+        lua_info->tsg_lua_mode = TSG_LUA_JIT_ON;
+        luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_ON);
+    }
+    else
+    {
+        lua_info->tsg_lua_mode = TSG_LUA_JIT_OFF;
+        luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
+    }
+
+    int hook_granularity = ms * 1000000 / 20; //about ms / 20
+    lua_sethook(L, luaMaskCountHook, LUA_MASKCOUNT, hook_granularity);
 
     return 0;
 }
