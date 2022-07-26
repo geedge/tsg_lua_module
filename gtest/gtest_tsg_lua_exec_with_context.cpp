@@ -43,7 +43,7 @@ TEST(lua_exec_file, normal)
 	lua_register_function(L, "get", "get_userdata", get_userdata);
 	lua_script_context context = NULL;
 	context = lua_script_context_malloc(L);
-	int ret = lua_exec_file(L, script, in, (void *)ud, context, &out);
+	int ret = lua_exec_file(L, script, in, (void *)ud, context, 0, &out);
 	const char *str = "userdata:hello world., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -52,7 +52,7 @@ TEST(lua_exec_file, normal)
 	bzero(out.str, 1024);
 
 	ud = "hello lua.";
-	ret = lua_exec_file(L, script, in, (void *)ud, context, &out);
+	ret = lua_exec_file(L, script, in, (void *)ud, context, 0, &out);
 	str = "userdata:hello lua., context.count:2, context.message:This is not first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -62,7 +62,7 @@ TEST(lua_exec_file, normal)
 
 	lua_script_context context2 = NULL;
 	context2 = lua_script_context_malloc(L);
-	ret = lua_exec_file(L, script, in, (void *)ud, context2, &out);
+	ret = lua_exec_file(L, script, in, (void *)ud, context2, 0, &out);
 	str = "userdata:hello lua., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -95,7 +95,7 @@ TEST(lua_exec, normal)
 	lua_register_function(L, "get", "get_userdata", get_userdata);
 	lua_script_context context = NULL;
 	context = lua_script_context_malloc(L);
-	int ret = lua_exec(L, script, in, (void *)ud, context, &out);
+	int ret = lua_exec(L, script, in, (void *)ud, context, 0, &out);
 	const char *str = "userdata:hello world., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -104,7 +104,7 @@ TEST(lua_exec, normal)
 	bzero(out.str, 1024);
 
 	ud = "hello lua.";
-	ret = lua_exec(L, script, in, (void *)ud, context, &out);
+	ret = lua_exec(L, script, in, (void *)ud, context, 0, &out);
 	str = "userdata:hello lua., context.count:2, context.message:This is not first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -114,7 +114,7 @@ TEST(lua_exec, normal)
 
 	lua_script_context context2 = NULL;
 	context2 = lua_script_context_malloc(L);
-	ret = lua_exec(L, script, in, (void *)ud, context2, &out);
+	ret = lua_exec(L, script, in, (void *)ud, context2, 0, &out);
 	str = "userdata:hello lua., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -146,7 +146,7 @@ TEST(lua_cache_exec, normal)
 	lua_register_function(L, "get", "get_userdata", get_userdata);
 	lua_script_context context = NULL;
 	context = lua_script_context_malloc(L);
-	int ret = lua_cache_exec(L, script_id, in, (void *)ud, context, &out);
+	int ret = lua_cache_exec(L, script_id, in, (void *)ud, context, 0, &out);
 	const char *str = "userdata:hello world., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -155,7 +155,7 @@ TEST(lua_cache_exec, normal)
 	bzero(out.str, 1024);
 
 	ud = "hello lua.";
-	ret = lua_cache_exec(L, script_id, in, (void *)ud, context, &out);
+	ret = lua_cache_exec(L, script_id, in, (void *)ud, context, 0, &out);
 	str = "userdata:hello lua., context.count:2, context.message:This is not first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);
@@ -165,7 +165,7 @@ TEST(lua_cache_exec, normal)
 
 	lua_script_context context2 = NULL;
 	context2 = lua_script_context_malloc(L);
-	ret = lua_cache_exec(L, script_id, in, (void *)ud, context2, &out);
+	ret = lua_cache_exec(L, script_id, in, (void *)ud, context2, 0, &out);
 	str = "userdata:hello lua., context.count:1, context.message:This is first called";
 	EXPECT_EQ(0, ret);
 	EXPECT_EQ(strlen(str), out.len);

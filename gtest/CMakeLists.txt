@@ -11,7 +11,6 @@ link_libraries(tsglua gtest gtest_main pthread)
 
 add_definitions(-g -W -Wall)
 add_executable(gtest_tsg_lua ${SRCS})
-# add_executable(gtest_lua_remove_cmd ./gtest_lua_remove_cmd.cpp)
 add_dependencies(gtest_tsg_lua ${lib_name}_shared gtest)
 #target_link_libraries(gtest_tsg_lua tsglua gtest gtest_main pthread)
 
