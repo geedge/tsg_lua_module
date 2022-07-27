@@ -21,3 +21,4 @@ example/luatest/build/
 example/multithread
 example/single_thread
 example/luatest/lib/build/
+support/luajit2-2.1-agentzh/

@@ -4,8 +4,8 @@ include(ExternalProject)
 ### luajit-2.1
 set(LUAJIT2_ROOT            ${CMAKE_CURRENT_BINARY_DIR})
 set(LUAJIT2_URL             ${CMAKE_CURRENT_SOURCE_DIR}/luajit2-2.1-agentzh.zip)
-set(LUAJIT2_URL_MD5         6e17cd2263473f9b85b47d0736cf12da)
-set(LUAJIT2_MAKE            cd ${LUAJIT2_ROOT}/luajit2/src/luajit2 && make) 
+set(LUAJIT2_URL_MD5         37c03c469aa461ec44a0e4cebf1ceb52)
+set(LUAJIT2_MAKE            cd ${LUAJIT2_ROOT}/luajit2/src/luajit2 && make BUILD_STATIC_LIB=${BUILD_STATIC_LIB}) 
 set(LUAJIT2_INSTALL         cd ${LUAJIT2_ROOT}/luajit2/src/luajit2 && make install PREFIX=${LUAJIT_INSTALL_PREFIX})
 
 ExternalProject_Add(luajit2

@@ -30,6 +30,8 @@ else()
   message(FATAL_ERROR "Could not find the program cppcheck.")
 endif()
 
+option(BUILD_STATIC_LIB "build lib${lib_name}.a static lib" OFF) #默认不生成静态库
+
 add_subdirectory(support) 
 add_subdirectory(src) 
 add_subdirectory(example)
