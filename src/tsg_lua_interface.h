@@ -42,10 +42,8 @@ const char *lua_get_last_error_string(struct lua_vm *vm);
  * return value:      int                      successed, return 0; failed, return error code */
 int lua_vm_destory(struct lua_vm *vm);
 
-struct lua_cbinding_params;
-struct lua_cbinding_params *lua_cbinding_get_last_params(struct lua_vm *vm);
-struct lua_data *lua_cbinging_get_next_para(struct lua_cbinding_params *params);
-void lua_cbinding_free_params(struct lua_cbinding_params *params);
+int lua_cbinding_get_last_params_num(struct lua_vm *vm);
+int lua_cbinding_get_param(struct lua_vm *vm, int param_index, struct lua_data *param);
 
 int lua_cbinding_return(struct lua_vm *vm, struct lua_data *data);
 int lua_cbinding_return_pair(struct lua_vm *vm, struct lua_data *data1, struct lua_data *data2);
