@@ -1,105 +1,115 @@
 /*************************************************************************
-    > File Name: tsg_lua_interface.h
+    > File Name: elua.h
     > Author: pxz
-    > Created Time: Wed 08 Jul 2020 02:50:42 PM CST
+    > Created Time: Wed 01 Sep 2022 
  ************************************************************************/
-#ifndef __TSG_LUA_INTERFACE__
-#define __TSG_LUA_INTERFACE__
+#pragma once
+
 #include <stddef.h>
 
-enum lua_type
+enum elua_type
 {
     NIL = 0,
     STRING = 1,
     INTEGER,
     BOOLEAN,
+    TABLE,
 };
 
-struct lua_data
+struct elua_table;
+
+struct elua_data
 {
-    enum lua_type type;
-    size_t len;
+	enum elua_type type;
+	size_t len;
     union{
         char *string;
-        long num;
-        bool flag;
+        long integer;
+        bool true_or_false;
+		struct elua_table *table;
     };
 };
 
-struct lua_vm;
+struct elua_vm;
 
-/* function name:     tsg_lua_vm_create
+/* function name:     elua_vm_create
  * input:             char *name          the name of virtual machine, default: "TSG"
- * return value:      tsg_lua_handle      successed,return a virtual machine; failed, return NULL*/
-struct lua_vm *lua_vm_create(const char *vm_name);
+ * return value:      elua_handle      successed,return a virtual machine; failed, return NULL*/
+struct elua_vm *elua_create_vm(const char *vm_name);
 
-int lua_remove_function(struct lua_vm *vm, const char *lua_function);
+int elua_remove_function(struct elua_vm *vm, const char *elua_function);
 
-const char *lua_get_last_error_string(struct lua_vm *vm);
+const char *elua_get_last_error_string(struct elua_vm *vm);
 
-/* function name:     tsg_destory_lua         
- * input:             tsg_lua_handle L         a virtual machine
+/* function name:     destory_lua         
+ * input:             elua_handle L         a virtual machine
  * return value:      int                      successed, return 0; failed, return error code */
-int lua_vm_destory(struct lua_vm *vm);
+int elua_destroy_vm(struct elua_vm *vm);
 
-int lua_cbinding_get_last_params_num(struct lua_vm *vm);
-int lua_cbinding_get_param(struct lua_vm *vm, int param_index, struct lua_data *param);
+int elua_cbinding_get_input_params_num(struct elua_vm *vm);
+int elua_cbinding_get_input_param(struct elua_vm *vm, int param_index, struct elua_data *param);
+int elua_cbinding_set_output_params(struct elua_vm *vm, struct elua_data *params, int params_num);  // only call once 
 
-int lua_cbinding_return(struct lua_vm *vm, struct lua_data *data);
-int lua_cbinding_return_pair(struct lua_vm *vm, struct lua_data *data1, struct lua_data *data2);
+struct elua_table *elua_create_table(struct elua_vm *vm);
+int elua_add_table(struct elua_table *table, struct elua_data *key, struct elua_data *value);
+int elua_update_table(struct elua_table *table, struct elua_data *key, struct elua_data *value);
+int elua_delete_table(struct elua_table *table, struct elua_data *key, struct elua_data *value);
+struct elua_data *elua_search_table(struct elua_table *table, struct elua_data *key);
+void elua_destroy_table(struct elua_table *table);
 
-/* function name:     lua_get_userdata         
+/* function name:     elua_get_userdata         
  * description:       get C userdata
- * input:             tsg_lua_handle L           a virtual machine
+ * input:             elua_handle L           a virtual machine
  * return value:     int                         successed, return 0; failed, return error code */
-void *lua_get_exec_userdata(struct lua_vm *vm);
+void *elua_get_execute_userdata(struct elua_vm *vm);
 
-typedef int (*lua_cbinding_func_ptr)(struct lua_vm *vm);
-/* function name:     lua_register_function         
+typedef int (*elua_cbinding_func_ptr)(struct elua_vm *vm);
+/* function name:     elua_register_function         
  * description:       Regist a c function to lua
- * input:   tsg_lua_handle L            a virtual machine
+ * input:   elua_handle L            a virtual machine
  * input:   const char *function_set    The function set to which the function belongs
  * input:   const char *function_name   function name
- * input:   lua_function_ptr function   function pointer
+ * input:   elua_function_ptr function   function pointer
  * return value:     int                successed, return 0; failed return 1 */
-int lua_register_cbinding(struct lua_vm *vm, const char *namespace, const char *lua_func_name, lua_cbinding_func_ptr c_func_ptr);
+int elua_register_cbinding(struct elua_vm *vm, const char *func_space_name, const char *elua_func_name, elua_cbinding_func_ptr c_func_ptr);
 
-struct lua_context;
+struct elua_context;
 
-/* function name:     lua_script_context_malloc         
- * input:             tsg_lua_handle L  
- * return value:      lua_script_context           failed, return NULL; successed, return a context*/
-struct lua_context *lua_context_create(struct lua_vm *vm, const char *ctx_name);
+/* function name:     elua_script_context_malloc         
+ * input:             elua_handle L  
+ * return value:      elua_script_context           failed, return NULL; successed, return a context*/
+struct elua_context *elua_create_context(struct elua_vm *vm, const char *ctx_name);
 
-/* function name:     lua_script_context_free         
- * input:             tsg_lua_handle L  
- * input:             lua_script_context context          context waiting to free        
+/* function name:     elua_script_context_free         
+ * input:             elua_handle L  
+ * input:             elua_script_context context          context waiting to free        
  * return value:      int                                 successed, return 0; failed, return -1 */
-int lua_context_destroy(struct lua_vm *vm, struct lua_context *ctx);
+int elua_destroy_context(struct elua_context *ctx);
 
-/* function name:     tsg_lua_cache_script 
- * input:             tsg_lua_handle L       a virtual machine
+struct elua_script;
+
+/* function name:     elua_cache_script 
+ * input:             elua_handle L       a virtual machine
  *                    char *script           script waiting to be cached, which must be script`s content
  *                    size_t *script_len     the length of script waiting to be cached
  *              
  * return value:     int                     successed, return a script id which is bigger than 1; failed, return error code */
-size_t lua_cache_script(struct lua_vm *vm, const char *script, size_t script_len);
+struct elua_script *elua_cache_script(struct elua_vm *vm, const char *script, size_t script_len, size_t timeout_ms);
 
-/* function name:     lua_cache_exec   
- * input:             tsg_lua_handle L              a virtual machine
+/* function name:     elua_cache_exec   
+ * input:             elua_handle L              a virtual machine
  *                    size_t script_id              a script id
- *                    struct lua_data_t in          data waiting to be handled
- *                    void *userdata                can get the userdata with lua_get_userdata(L)
- *                    lua_script_context context    Can accessed with lua-name.context in lua script
+ *                    struct elua_data_t in          data waiting to be handled
+ *                    void *userdata                can get the userdata with elua_get_userdata(L)
+ *                    elua_script_context context    Can accessed with lua-name.context in lua script
  *                    size_t timeout_ms             Maximum time to run the script.if timeout_ms > 0, jit.off; timeout_ms == 0, jit.on, not expired.
- * output:            struct lua_arg_t *outvalue    Requires input of an expected type that is not NIL, the type of the result that will be output after the call is complete
+ * output:            struct elua_arg_t *outvalue    Requires input of an expected type that is not NIL, the type of the result that will be output after the call is complete
  * return value:      int                           successed, return 0; failed, return error code */
-int lua_cache_exec(struct lua_vm *vm, size_t script_id, struct lua_data *in, void *userdata, struct lua_context *ctx, size_t timeout_ms, struct lua_data *out);
+int elua_execute_script(struct elua_script *escript, const char *input, size_t input_len, void *userdata, struct elua_context *ctx, struct elua_data *output);
 
-/* function name:     tsg_unchache_script 
- * input:             tsg_lua_handle L       a virtual machine
+/* function name:     unchache_script 
+ * input:             elua_handle L       a virtual machine
  *                    size_t script_id       a script id
  * return value:      int                    successed, return 0; failed, return error code */
-int lua_uncache_script(struct lua_vm *vm, size_t script_id);
+int elua_cleanup_script(struct elua_script *escript);
 
-#endif
