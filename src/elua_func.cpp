@@ -1117,9 +1117,9 @@ static int elua_vm_return_value(lua_State *L, struct elua_data *output, char *er
             actual_ret_type = NIL;
             break;
         case LUA_TSTRING:
-            if (output->type == STRING && output->string != NULL)
+            if (output->type == STRING && output->buff != NULL)
             {
-                memcpy(output->string, lua_tostring(L, -1), output->len);
+                memcpy(output->buff, lua_tostring(L, -1), output->len);
             }
             actual_ret_type = STRING;
             break;
@@ -1293,8 +1293,8 @@ int elua_cbinding_get_input_param(struct elua_vm *vm, int param_index, struct el
         break;
     case LUA_TSTRING:
         param->type = STRING;
-        param->string = (char *)lua_tostring(L, param_index);
-        param->len = strlen(param->string);
+        param->buff = (char *)lua_tostring(L, param_index);
+        param->len = strlen(param->buff);
         break;
     default:
         snprintf(elua_info->errmsg, 1023, "[%s:%d] the out_type of param value is invalid.", __FUNCTION__, __LINE__);
@@ -1352,7 +1352,7 @@ int elua_add_table(struct elua_table *table, struct elua_data *key, struct elua_
     int top = lua_gettop(L);
     if (key->type == STRING)
     {
-        lua_pushlstring(L, key->string, key->len);
+        lua_pushlstring(L, key->buff, key->len);
     }
     else
     {
@@ -1365,7 +1365,7 @@ int elua_add_table(struct elua_table *table, struct elua_data *key, struct elua_
         lua_pushnil(L);
         break;
     case STRING:
-        lua_pushlstring(L, value->string, value->len);
+        lua_pushlstring(L, value->buff, value->len);
         break;
     case INTEGER:
         lua_pushinteger(L, value->integer);
@@ -1423,7 +1423,7 @@ int elua_search_table(struct elua_table *table, struct elua_data *key, struct el
 
     if (key->type == STRING)
     {
-        lua_pushlstring(L, key->string, key->len);
+        lua_pushlstring(L, key->buff, key->len);
     }
     else
     {
@@ -1443,7 +1443,7 @@ int elua_search_table(struct elua_table *table, struct elua_data *key, struct el
         break;
         case LUA_TSTRING:
         value->type = STRING;
-        value->string = (char *)lua_tostring(L, -1);
+        value->buff = (char *)lua_tostring(L, -1);
         break;
         case LUA_TNUMBER:
         value->type = INTEGER;
@@ -1510,7 +1510,7 @@ int elua_cbinding_set_output_params(struct elua_vm *vm, struct elua_data *params
             lua_pushnil(L);
             break;
         case STRING:
-            lua_pushlstring(L, params[i].string, params[i].len);
+            lua_pushlstring(L, params[i].buff, params[i].len);
             break;
         case INTEGER:
             lua_pushinteger(L, params[i].integer);
@@ -1547,7 +1547,7 @@ int elua_cbinding_return(struct elua_vm *vm, struct elua_data *data)
         lua_pushnil(L);
         break;
     case STRING:
-        lua_pushlstring(L, data->string, data->len);
+        lua_pushlstring(L, data->buff, data->len);
         break;
     case INTEGER:
         lua_pushinteger(L, data->integer);

@@ -36,7 +36,7 @@ TEST(elua_time_out, lua)
 	elua_data out;
 	out.type = STRING;
 	out.integer = 1024;
-	out.string = (char *)calloc(1, 1024);
+	out.buff = (char *)calloc(1, 1024);
 	long tt, elapsed;
 	int ret = 0;
 
@@ -45,7 +45,7 @@ TEST(elua_time_out, lua)
 	ret = elua_execute_script(escript, buff, len, (void *)ud, NULL, &out);
 	EXPECT_EQ(ret, -1);
 	EXPECT_STREQ(elua_get_last_error_string(L), "[elua_call_script:1074] Lua script killed by time out..");
-	bzero(out.string, 1024);
+	bzero(out.buff, 1024);
 
 	struct elua_script *escript0 = elua_cache_script_file(L, script, 0);
 	tt = mstime();
@@ -55,18 +55,18 @@ TEST(elua_time_out, lua)
 	EXPECT_LE(10, elapsed);
 	EXPECT_EQ(len, out.len);
 	EXPECT_EQ(STRING, out.type);
-	EXPECT_STREQ(buff, out.string);
-	bzero(out.string, 1024);
+	EXPECT_STREQ(buff, out.buff);
+	bzero(out.buff, 1024);
 
 	ret = elua_execute_script(escript, buff, len, (void *)ud, NULL, &out);
 	EXPECT_EQ(ret, -1);
 	EXPECT_STREQ(elua_get_last_error_string(L), "[elua_call_script:1074] Lua script killed by time out..");
-	bzero(out.string, 1024);
+	bzero(out.buff, 1024);
 
 	elua_cleanup_script(escript);
 	elua_cleanup_script(escript0);
 	elua_destroy_vm(L);
-	free(out.string);
+	free(out.buff);
 }
 
 TEST(elua_time_out, c)
@@ -82,7 +82,7 @@ TEST(elua_time_out, c)
 	struct elua_data out;
 	out.type = STRING;
 	out.integer = 1024;
-	out.string = (char *)calloc(1, 1024);
+	out.buff = (char *)calloc(1, 1024);
 	long tt, elapsed;
 
 	elua_register_cbinding(L, NULL, "set_count", count_set);
@@ -94,7 +94,7 @@ TEST(elua_time_out, c)
 	EXPECT_STREQ(elua_get_last_error_string(L), "[elua_call_script:1074] Lua script killed by time out..");
 	EXPECT_LE(10, elapsed);
 	EXPECT_EQ(10000000, count);
-	bzero(out.string, 1024);
+	bzero(out.buff, 1024);
 
 	struct elua_script *escript0 = elua_cache_script_file(L, script, 0);
 	tt = mstime();
@@ -104,9 +104,9 @@ TEST(elua_time_out, c)
 	EXPECT_LE(10, elapsed);
 	EXPECT_EQ(len, out.len);
 	EXPECT_EQ(STRING, out.type);
-	EXPECT_STREQ(buff, out.string);
+	EXPECT_STREQ(buff, out.buff);
 	EXPECT_EQ(10000000, count);
-	bzero(out.string, 1024);
+	bzero(out.buff, 1024);
 
 	tt = mstime();
 	ret = elua_execute_script(escript, buff, len, (void *)&count, NULL, &out);
@@ -115,10 +115,10 @@ TEST(elua_time_out, c)
 	EXPECT_STREQ(elua_get_last_error_string(L), "[elua_call_script:1074] Lua script killed by time out..");
 	EXPECT_LE(10, elapsed);
 	EXPECT_EQ(10000000, count);
-	bzero(out.string, 1024);
+	bzero(out.buff, 1024);
 
 	elua_cleanup_script(escript0);
 	elua_cleanup_script(escript);
 	elua_destroy_vm(L);
-	free(out.string);
+	free(out.buff);
 }

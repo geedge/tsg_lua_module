@@ -39,7 +39,7 @@ TEST(elua_get_weixinnum, exec_cache_script)
     struct elua_data output;
     output.len = 1024;
     output.type = STRING;
-    output.string = buff; 
+    output.buff = buff; 
 
 	L = elua_create_vm(NULL);
 	const char *script = get_file_to_buffer("./script/handle_weixinnum.lua", &script_len);
@@ -52,7 +52,7 @@ TEST(elua_get_weixinnum, exec_cache_script)
     EXPECT_EQ(0, ret);
     EXPECT_EQ(10, output.len);
     EXPECT_EQ(STRING, output.type);
-    EXPECT_STREQ("1955740780", output.string);
+    EXPECT_STREQ("1955740780", output.buff);
 }
 
 TEST(elua_get_weixinnum, exec_cache_script_file)
@@ -65,7 +65,7 @@ TEST(elua_get_weixinnum, exec_cache_script_file)
     struct elua_data output;
     output.len = 1024;
     output.type = STRING;
-    output.string = buff;
+    output.buff = buff;
 	L = elua_create_vm(NULL);
 	struct elua_script *escript = elua_cache_script_file(L, "./script/handle_weixinnum.lua", 0);
 	const char *data = get_file_to_buffer("./script/weixin_id_ios_20200423_004.pcap", &data_len);
@@ -75,5 +75,5 @@ TEST(elua_get_weixinnum, exec_cache_script_file)
     EXPECT_EQ(0, ret);
     EXPECT_EQ(10, output.len);
     EXPECT_EQ(STRING, output.type);
-    EXPECT_STREQ("1955740780", output.string);
+    EXPECT_STREQ("1955740780", output.buff);
 }

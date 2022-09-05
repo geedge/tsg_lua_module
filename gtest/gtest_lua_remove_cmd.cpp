@@ -9,7 +9,7 @@ TEST(lua_remove_cmd, normal)
 	elua_data out;
 	out.type = STRING;
 	out.integer = 1024;
-	out.string = buff;
+	out.buff = buff;
 
 	elua_remove_function(L, "print");
 

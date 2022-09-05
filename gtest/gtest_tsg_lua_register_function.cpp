@@ -10,7 +10,7 @@ int get_hello(elua_vm *L)
 {
     struct elua_data ldata;
     ldata.type = STRING;
-    ldata.string = (char *)"hello";
+    ldata.buff = (char *)"hello";
     ldata.len = 5;
     elua_cbinding_set_output_params(L, &ldata, 1);
     return 1;
@@ -41,10 +41,10 @@ int set_world(elua_vm *L)
     struct elua_data retvalue;
     retvalue.type = STRING;
     retvalue.len = argv[0].len + argv[1].len + 2;
-    retvalue.string = (char *)calloc(1, retvalue.len);
-    sprintf(retvalue.string, "%s %s.", argv[0].string, argv[1].string);
+    retvalue.buff = (char *)calloc(1, retvalue.len);
+    sprintf(retvalue.buff, "%s %s.", argv[0].buff, argv[1].buff);
     elua_cbinding_set_output_params(L, &retvalue, 1);
-    free(retvalue.string);
+    free(retvalue.buff);
 
     return 1;
 }
@@ -64,9 +64,9 @@ int get_req_header(elua_vm *L)
     for (int i = 0; i < (int)(sizeof(key) / sizeof(key[0])); i++)
     {
         ekey.len = strlen(key[i]);
-        ekey.string = (char *)key[i];
+        ekey.buff = (char *)key[i];
         evalue.len = strlen(value[i]);
-        evalue.string = (char *)value[i];
+        evalue.buff = (char *)value[i];
         elua_add_table(etab, &ekey, &evalue);
     }
 
@@ -94,9 +94,9 @@ int get_rsp_header(elua_vm *L)
     for (int i = 0; i < (int)(sizeof(key) / sizeof(key[0])); i++)
     {
         ekey.len = strlen(key[i]);
-        ekey.string = (char *)key[i];
+        ekey.buff = (char *)key[i];
         evalue.len = strlen(value[i]);
-        evalue.string = (char *)value[i];
+        evalue.buff = (char *)value[i];
         elua_add_table(etab, &ekey, &evalue);
     }
 
@@ -148,7 +148,7 @@ int set_repeat(elua_vm *L)
     elua_cbinding_set_output_params(L, &retvalue, 1);
     retvalue.type = STRING;
     retvalue.len = 5;
-    retvalue.string = (char *)"hello";
+    retvalue.buff = (char *)"hello";
     elua_cbinding_set_output_params(L, &retvalue, 1);
 
     return 1;
@@ -167,7 +167,7 @@ int set_multi_type_retvalue(elua_vm *L)
         ekey.type = STRING;
         evalue.type = INTEGER;
         ekey.len = 5;
-        ekey.string = buff;
+        ekey.buff = buff;
         evalue.len = sizeof(int);
         evalue.integer = i;
         elua_add_table(etab, &ekey, &evalue);
@@ -178,7 +178,7 @@ int set_multi_type_retvalue(elua_vm *L)
         ekey.len = sizeof(int);
         ekey.integer = i;
         evalue.len = 5;
-        evalue.string = buff;
+        evalue.buff = buff;
         elua_add_table(etab, &ekey, &evalue);
     }
 
@@ -207,7 +207,7 @@ TEST(elua_register_cbinding, normal)
     struct elua_script *escript = elua_cache_script_file(L, script, 0);
     struct elua_data output;
     output.type = STRING;
-    output.string = buff;
+    output.buff = buff;
     output.len = 1024;
     memset(buff, 0, 1024);
     int ret = elua_execute_script(escript, "hello", strlen("hello"), NULL, NULL, &output);
@@ -215,7 +215,7 @@ TEST(elua_register_cbinding, normal)
     EXPECT_EQ(0, ret);
     EXPECT_EQ(12, output.len);
     EXPECT_EQ(STRING, output.type);
-    EXPECT_STREQ("hello world.", output.string);
+    EXPECT_STREQ("hello world.", output.buff);
 	elua_destroy_vm(L);
 }
 
@@ -233,7 +233,7 @@ TEST(elua_register_cbinding, get_header)
     struct elua_script *escript = elua_cache_script_file(L, script, 0);
     struct elua_data output;
     output.type = STRING;
-    output.string = buff;
+    output.buff = buff;
     output.len = 1024;
     memset(buff, 0, 1024);
     int ret = elua_execute_script(escript, "hello", strlen("hello"), NULL, NULL, &output);
@@ -242,7 +242,7 @@ TEST(elua_register_cbinding, get_header)
     EXPECT_EQ(0, ret);
     EXPECT_EQ(strlen(result), output.len);
     EXPECT_EQ(STRING, output.type);
-    EXPECT_STREQ(result, output.string);
+    EXPECT_STREQ(result, output.buff);
 	elua_destroy_vm(L);
 }
 
@@ -261,7 +261,7 @@ TEST(elua_register_cbinding, other)
     struct elua_script *escript = elua_cache_script_file(L, script, 0);
     struct elua_data output;
     output.type = STRING;
-    output.string = buff;
+    output.buff = buff;
     output.len = 1024;
     memset(buff, 0, 1024);
     int ret = elua_execute_script(escript, "hello", strlen("hello"), NULL, NULL, &output);
@@ -271,7 +271,7 @@ TEST(elua_register_cbinding, other)
     EXPECT_EQ(0, ret);
     EXPECT_EQ(strlen(result), output.len);
     EXPECT_EQ(STRING, output.type);
-    EXPECT_STREQ(result, output.string);
+    EXPECT_STREQ(result, output.buff);
 	elua_destroy_vm(L);
 }
 
@@ -289,7 +289,7 @@ TEST(elua_register_cbinding, invalid_args)
     struct elua_script *escript = elua_cache_script_file(L, script, 0);
     struct elua_data output;
     output.type = STRING;
-    output.string = buff;
+    output.buff = buff;
     output.len = 1024;
     memset(buff, 0, 1024);
     int ret = elua_execute_script(escript, "hello", strlen("hello"), NULL, NULL, &output);
@@ -297,7 +297,7 @@ TEST(elua_register_cbinding, invalid_args)
     EXPECT_EQ(0, ret);
     EXPECT_EQ(12, output.len);
     EXPECT_EQ(STRING, output.type);
-    EXPECT_STREQ("hello world.", output.string);
+    EXPECT_STREQ("hello world.", output.buff);
 	elua_destroy_vm(L);
 }
 
@@ -314,7 +314,7 @@ TEST(elua_register_cbinding, set_repeat)
     struct elua_script *escript = elua_cache_script_file(L, script, 0);
     struct elua_data output;
     output.type = STRING;
-    output.string = buff;
+    output.buff = buff;
     output.len = 1024;
     memset(buff, 0, 1024);
     int ret = elua_execute_script(escript, "hello", strlen("hello"), NULL, NULL, &output);
@@ -322,7 +322,7 @@ TEST(elua_register_cbinding, set_repeat)
     EXPECT_EQ(0, ret);
     EXPECT_EQ(5, output.len);
     EXPECT_EQ(STRING, output.type);
-    EXPECT_STREQ("hello", output.string);
+    EXPECT_STREQ("hello", output.buff);
 	elua_destroy_vm(L);
 }
 
@@ -339,7 +339,7 @@ TEST(elua_register_cbinding, get_value)
     struct elua_script *escript = elua_cache_script_file(L, script, 0);
     struct elua_data output;
     output.type = STRING;
-    output.string = buff;
+    output.buff = buff;
     output.len = 1024;
     memset(buff, 0, 1024);
     int ret = elua_execute_script(escript, "hello", strlen("hello"), NULL, NULL, &output);
@@ -348,6 +348,6 @@ TEST(elua_register_cbinding, get_value)
     printf(elua_get_last_error_string(L));
     EXPECT_EQ(47, output.len);
     EXPECT_EQ(STRING, output.type);
-    EXPECT_STREQ("0:test0,1:test1,2:test2,test1:1,test0:0,test2:2", output.string);
+    EXPECT_STREQ("0:test0,1:test1,2:test2,test1:1,test0:0,test2:2", output.buff);
 	elua_destroy_vm(L);
 }

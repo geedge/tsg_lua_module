@@ -18,9 +18,10 @@ TEST(elua_execute_script, normal_return_string)
     int len = strlen(data);
     struct elua_data out;
     char buff[1024];
+    memset(buff, 0, 1024);
     out.type = STRING;
     out.integer = 1204;
-    out.string = buff;
+    out.buff = buff;
 
     struct elua_script *escript = elua_cache_script_file(L, script, 0);
     int ret = elua_execute_script(escript, data, len, NULL, NULL, &out);
@@ -29,7 +30,7 @@ TEST(elua_execute_script, normal_return_string)
     EXPECT_EQ(0, ret);
     EXPECT_EQ(11, out.len);
     EXPECT_EQ(STRING, out.type);
-    EXPECT_STREQ("hello world", out.string);
+    EXPECT_STREQ("hello world", out.buff);
 }
 
 TEST(elua_execute_script, normal_return_boolean)
@@ -286,7 +287,8 @@ TEST(elua_execute_script, normal_return_string_sharp)
     out.type = STRING;
     out.len = 1024;
     char buff[1024];
-    out.string = buff;
+    memset(buff, 0, 1024);
+    out.buff = buff;
 
     int len = strlen(data);
     int ret = elua_execute_script(escript, data, len, NULL, NULL, &out);
@@ -294,5 +296,5 @@ TEST(elua_execute_script, normal_return_string_sharp)
     /* check */
     EXPECT_EQ(0, ret);
     EXPECT_EQ(len, out.len);
-    EXPECT_STREQ(data, out.string);
+    EXPECT_STREQ(data, out.buff);
 }

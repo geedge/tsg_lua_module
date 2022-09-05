@@ -73,7 +73,7 @@ void *lua_function(void *ptr)
     char buff[1024];
     struct elua_data output;
     output.len = 1024;
-    output.string = buff;
+    output.buff = buff;
     output.type = STRING;
 
     userdata_t *userdata = (userdata_t *)ptr;
@@ -113,7 +113,7 @@ void *lua_function(void *ptr)
         printf("[C][thread_id:%d]:elua_execute_script failed...\n", thread_id);
         return (void *)"cache exec failed";
     }
-    debuginfo(thread_id, output.string, output.len, output.type);
+    debuginfo(thread_id, output.buff, output.len, output.type);
     printf("[C][thread_id:%d]:elua_execute_script success...\n", thread_id);
         
     printf("[C][thread_id:%d]:elua_cache_script_file start...\n", thread_id);
@@ -132,7 +132,7 @@ void *lua_function(void *ptr)
         printf("[C][thread_id:%d]:elua_execute_script failed...\n", thread_id);
         return (void *)"cache exec failed";
     }
-    debuginfo(thread_id, output.string, output.len, output.type);
+    debuginfo(thread_id, output.buff, output.len, output.type);
     printf("[C][thread_id:%d]:elua_execute_script success...\n", thread_id);
 
     printf("[C][thread_id:%d]:elua_cleanup_script start...\n", thread_id);

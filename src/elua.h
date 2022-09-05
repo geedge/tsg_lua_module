@@ -23,7 +23,7 @@ struct elua_data
 	enum elua_type type;
 	size_t len;
     union{
-        char *string;
+        char *buff;
         long integer;
         bool true_or_false;
 		struct elua_table *table;

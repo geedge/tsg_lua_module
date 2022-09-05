@@ -57,7 +57,7 @@ int main()
     output.len = 1024;
     char buff[1024];
     memset(buff, 0, 1024);
-    output.string = buff;
+    output.buff = buff;
 
     /* lua 缓存脚本， 再运行 */
     printf("\n*********************elua_cache_script_file************************\n");
@@ -84,7 +84,7 @@ int main()
     switch(output.type)
     {
         case STRING:
-            printf("[C]:out_data:%s\n", output.string);
+            printf("[C]:out_data:%s\n", output.buff);
             break;
         case BOOLEAN:
             printf("[C]:out_data:%d\n", output.true_or_false);
@@ -120,7 +120,7 @@ int main()
     switch(output.type)
     {
         case STRING:
-            printf("[C]:out_data:%s\n", output.string);
+            printf("[C]:out_data:%s\n", output.buff);
             break;
         case BOOLEAN:
             printf("[C]:out_data:%d\n", output.true_or_false);
