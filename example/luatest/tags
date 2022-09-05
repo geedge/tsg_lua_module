@@ -58,12 +58,12 @@ ARCHITECTURE_ID	lib/build/CMakeFiles/3.9.2/CompilerIdCXX/CMakeCXXCompilerId.cpp	
 ARCHITECTURE_ID	lib/build/CMakeFiles/3.9.2/CompilerIdCXX/CMakeCXXCompilerId.cpp	427;"	d	file:
 ARCHITECTURE_ID	lib/build/CMakeFiles/3.9.2/CompilerIdCXX/CMakeCXXCompilerId.cpp	430;"	d	file:
 ARCHITECTURE_ID	lib/build/CMakeFiles/3.9.2/CompilerIdCXX/CMakeCXXCompilerId.cpp	434;"	d	file:
-CMAKE_BINARY_DIR	build/Makefile	/^CMAKE_BINARY_DIR = \/root\/workspace\/tsg_lua_0.99\/example\/demo_winxinhao\/build$/;"	m
-CMAKE_BINARY_DIR	lib/build/Makefile	/^CMAKE_BINARY_DIR = \/root\/workspace\/tsg_lua_0.99\/example\/demo_winxinhao\/lib\/build$/;"	m
+CMAKE_BINARY_DIR	build/Makefile	/^CMAKE_BINARY_DIR = \/root\/workspace\/elua_0.99\/example\/demo_winxinhao\/build$/;"	m
+CMAKE_BINARY_DIR	lib/build/Makefile	/^CMAKE_BINARY_DIR = \/root\/workspace\/elua_0.99\/example\/demo_winxinhao\/lib\/build$/;"	m
 CMAKE_COMMAND	build/Makefile	/^CMAKE_COMMAND = \/usr\/local\/bin\/cmake$/;"	m
 CMAKE_COMMAND	lib/build/Makefile	/^CMAKE_COMMAND = \/usr\/local\/bin\/cmake$/;"	m
-CMAKE_SOURCE_DIR	build/Makefile	/^CMAKE_SOURCE_DIR = \/root\/workspace\/tsg_lua_0.99\/example\/demo_winxinhao$/;"	m
-CMAKE_SOURCE_DIR	lib/build/Makefile	/^CMAKE_SOURCE_DIR = \/root\/workspace\/tsg_lua_0.99\/example\/demo_winxinhao\/lib$/;"	m
+CMAKE_SOURCE_DIR	build/Makefile	/^CMAKE_SOURCE_DIR = \/root\/workspace\/elua_0.99\/example\/demo_winxinhao$/;"	m
+CMAKE_SOURCE_DIR	lib/build/Makefile	/^CMAKE_SOURCE_DIR = \/root\/workspace\/elua_0.99\/example\/demo_winxinhao\/lib$/;"	m
 COMPILER_ID	build/CMakeFiles/3.9.2/CompilerIdC/CMakeCCompilerId.c	101;"	d	file:
 COMPILER_ID	build/CMakeFiles/3.9.2/CompilerIdC/CMakeCCompilerId.c	108;"	d	file:
 COMPILER_ID	build/CMakeFiles/3.9.2/CompilerIdC/CMakeCCompilerId.c	115;"	d	file:
@@ -543,9 +543,9 @@ INPUT_COMPLETE	luatest.cpp	110;"	d	file:
 INPUT_COMPLETE	luatest_old.cpp	80;"	d	file:
 IP_HEADER_LEN	luatest.cpp	27;"	d	file:
 IP_HEADER_LEN	luatest_old.cpp	23;"	d	file:
-L	luatest.cpp	/^    tsg_lua_handle L;$/;"	m	struct:lua_pacp_info_s	file:
-L	luatest.cpp	/^    tsg_lua_handle L;$/;"	m	struct:lua_text_info_s	file:
-L	luatest_old.cpp	/^    tsg_lua_handle L;$/;"	m	struct:lua_info_s	file:
+L	luatest.cpp	/^    elua_vm *L;$/;"	m	struct:lua_pacp_info_s	file:
+L	luatest.cpp	/^    elua_vm *L;$/;"	m	struct:lua_text_info_s	file:
+L	luatest_old.cpp	/^    elua_vm *L;$/;"	m	struct:lua_info_s	file:
 LIB_COMPLETE	luatest.cpp	112;"	d	file:
 LIB_COMPLETE	luatest_old.cpp	82;"	d	file:
 MAC_FRAME_HEADER_LEN	luatest.cpp	26;"	d	file:
@@ -853,8 +853,8 @@ lua_pcap_handle	luatest.cpp	/^void lua_pcap_handle(u_char *userarg, const struct
 lua_pcap_handle	luatest_old.cpp	/^void lua_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_char *packet)$/;"	f
 lua_pcap_info_t	luatest.cpp	/^}lua_pcap_info_t;$/;"	t	typeref:struct:lua_pacp_info_s	file:
 lua_pcap_info_t	luatest_old.cpp	/^}lua_pcap_info_t;$/;"	t	typeref:struct:lua_info_s	file:
-lua_pcap_prefix_handle	luatest.cpp	/^static void lua_pcap_prefix_handle(lua_thread_info_t *thread_info, char *debuginfo, tsg_lua_handle L, size_t script_id)$/;"	f	file:
-lua_text_handle	luatest.cpp	/^static void lua_text_handle(lua_text_info_t *text_info, char *debuginfo, tsg_lua_handle lua)$/;"	f	file:
+lua_pcap_prefix_handle	luatest.cpp	/^static void lua_pcap_prefix_handle(lua_thread_info_t *thread_info, char *debuginfo, elua_vm *L, size_t script_id)$/;"	f	file:
+lua_text_handle	luatest.cpp	/^static void lua_text_handle(lua_text_info_t *text_info, char *debuginfo, elua_vm *Lua)$/;"	f	file:
 lua_text_info_s	luatest.cpp	/^typedef struct lua_text_info_s$/;"	s	file:
 lua_text_info_t	luatest.cpp	/^}lua_text_info_t;$/;"	t	typeref:struct:lua_text_info_s	file:
 lua_thread_info_s	luatest.cpp	/^typedef struct lua_thread_info_s{$/;"	s	file:

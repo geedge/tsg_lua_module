@@ -21,4 +21,4 @@ else()
 	target_link_libraries(multithread ${lib_name}_shared pthread)
 endif()
 
-add_subdirectory(luatest)
+# add_subdirectory(luatest)

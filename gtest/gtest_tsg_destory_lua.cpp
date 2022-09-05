@@ -1,26 +1,27 @@
 /*************************************************************************
-    > File Name: gtest_tsg_lua_vm_create.cpp
+    > File Name: gtest_elua_create_vm.cpp
     > Author: pxz
     > Created Time: Sun 19 Jul 2020 01:27:13 PM CST
  ************************************************************************/
 #include <gtest/gtest.h>
-#include "tsg_lua_interface.h"
+#include "elua.h"
 
-/* tsg_destory_lua */
-TEST(tsg_destory_lua, normal)
+/* elua_destroy_vm */
+TEST(elua_destroy_vm, normal)
 {
-    tsg_lua_handle L = NULL;
-    L = tsg_lua_vm_create();
-    int ret = tsg_destory_lua(L);
+    elua_vm *L = NULL;
+    L = elua_create_vm(NULL);
+    int ret = elua_destroy_vm(L);
 
     EXPECT_EQ(0, ret);
 }
 
-TEST(tsg_destory_lua, lua_vm_isnull)
+TEST(elua_destroy_vm, lua_vm_isnull)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    int ret = tsg_destory_lua(L);
+    int ret = elua_destroy_vm(L);
 
-    EXPECT_EQ(ERR_LUAVM_ISNULL, ret);
+    EXPECT_EQ(-1, ret);
+    EXPECT_STREQ(elua_get_last_error_string(L), "The vm is invalid.");
 }

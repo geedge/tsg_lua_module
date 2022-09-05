@@ -1,10 +1,10 @@
 /*************************************************************************
-    > File Name: gtest_tsg_lua_cache_script.cpp
+    > File Name: gtest_elua_cache_script.cpp
     > Author: pxz
     > Created Time: Sun 19 Jul 2020 01:28:20 PM CST
  ************************************************************************/
 #include <gtest/gtest.h>
-#include "tsg_lua_interface.h"
+#include "elua.h"
 
 static size_t script_len;
 static char buffer[4096];
@@ -25,157 +25,169 @@ static char *get_script_buffer(const char *script)
     }
     return NULL;
 }
-/* tsg_lua_cache_script */
-TEST(tsg_lua_cache_script, normal)
+/* elua_cache_script */
+TEST(elua_cache_script, normal)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = get_script_buffer("./script/return_string_normal.lua");
-    int script_id = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(1, script_id);
+    EXPECT_NE((void *)NULL, escript);
 }
 
-TEST(tsg_lua_cache_script, lua_vm_isnull)
+TEST(elua_cache_script, lua_vm_isnull)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
     const char *script = get_script_buffer("./script/return_string_normal.lua");
-    int script_id = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(ERR_LUAVM_ISNULL, script_id);
+    EXPECT_EQ((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "The vm is invalid.");
 }
 
-TEST(tsg_lua_cache_script, script_isnull)
+TEST(elua_cache_script, script_isnull)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = NULL;
-    int script_id = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_ISNULL, script_id);
+    EXPECT_EQ((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_cache_script:703] Parameter error.");
 }
-TEST(tsg_lua_cache_script, do_expected)
+TEST(elua_cache_script, do_expected)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = get_script_buffer("./script/do_expected.lua");
-    int script_id = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_DO_EXPECTED, script_id);
+    EXPECT_EQ((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_load_buff:667] [string \"string\"]:3: 'do' expected near 'return'.");
 }
 
-TEST(tsg_lua_cache_script, then_expected)
+TEST(elua_cache_script, then_expected)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = get_script_buffer("./script/then_expected.lua");
-    int script_id = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_THEN_EXPECTED, script_id);
+    EXPECT_EQ((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_load_buff:667] [string \"string\"]:2: 'then' expected near 'str'.");
 }
 
-TEST(tsg_lua_cache_script, end_expected)
+TEST(elua_cache_script, end_expected)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = get_script_buffer("./script/end_expected.lua");
-    int script_id = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_END_EXPECTED, script_id);
+    EXPECT_EQ((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_load_buff:667] [string \"string\"]:4: 'end' expected (to close 'function' at line 1) near '<eof>'.");
 }
 
-TEST(tsg_lua_cache_script, eof_expected)
+TEST(elua_cache_script, eof_expected)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = get_script_buffer("./script/eof_expected.lua");
-    int script_id = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_EOF_EXPECTED, script_id);
+    EXPECT_EQ((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_load_buff:667] [string \"string\"]:5: '<eof>' expected near 'end'.");
 }
 
-TEST(tsg_lua_cache_script, equal_in_expected)
+TEST(elua_cache_script, equal_in_expected)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = get_script_buffer("./script/equal_in_expected.lua");
-    int script_id = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_EQUAL_IN_EXPECTED, script_id);
+    EXPECT_EQ((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_load_buff:667] [string \"string\"]:3: '=' or 'in' expected near 'return'.");
 }
 
-TEST(tsg_lua_cache_script, unexpected_symbol)
+TEST(elua_cache_script, unexpected_symbol)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = get_script_buffer("./script/unexpected_symbol.lua");
-    int script_id = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_UNEXPECTED_SYMBOL, script_id);
+    EXPECT_EQ((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_load_buff:667] [string \"string\"]:1: unexpected symbol near '-'.");
 }
 
-TEST(tsg_lua_cache_script, name_expected)
+TEST(elua_cache_script, name_expected)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = get_script_buffer("./script/name_expected.lua");
-    int ret = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_NAME_EXPECTED, ret);
+    EXPECT_EQ((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_load_buff:667] [string \"string\"]:2: '<name>' expected near 'do'.");
 }
 
-TEST(tsg_lua_cache_script, right_curves_bracket_expected)
+TEST(elua_cache_script, right_curves_bracket_expected)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = get_script_buffer("./script/right_curves_bracket_expected.lua");
-    int ret = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_RIGHT_CURVES_BRACKET_EXPECTED, ret);
+    EXPECT_EQ((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_load_buff:667] [string \"string\"]:2: ')' expected (to close '(' at line 1) near 'return'.");
 }
 
-TEST(tsg_lua_cache_script, right_curly_bracket_expected)
+TEST(elua_cache_script, right_curly_bracket_expected)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = get_script_buffer("./script/right_curly_bracket_expected.lua");
-    int ret = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_RIGHT_CURLY_BRACKET_EXPECTED, ret);
+    EXPECT_EQ((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_load_buff:667] [string \"string\"]:3: '}' expected near ')'.");
 }
 
-TEST(tsg_lua_cache_script, return_string_normal_sharp)
+TEST(elua_cache_script, return_string_normal_sharp)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = get_script_buffer("./script/return_string_normal_sharp.lua");
-    int script_id = tsg_lua_cache_script(L, script, script_len);
+    struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
     
     /* check */
-    EXPECT_EQ(1, script_id);
+    EXPECT_NE((void *)NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "");
 }

@@ -12,7 +12,7 @@ extern "C"
     #include<unistd.h>
     #include<time.h>
 }
-#include"../src/tsg_lua_interface.h"
+#include"../src/elua.h"
 #ifndef MAX_THREAD_NUM
 #define MAX_THREAD_NUM 9
 #endif
@@ -22,7 +22,7 @@ extern "C"
 typedef struct lua_script_info_s{
     const char *script_data;
     //int script_len;
-    int script_id;
+    struct elua_script *escript;
 }lua_script_info_t;
 
 typedef struct lua_data_s{
@@ -33,7 +33,7 @@ typedef struct lua_data_s{
 typedef struct{
     lua_test_data_t data;
     int thread_id;
-    tsg_lua_handle lua;
+    elua_vm *Lua;
 }userdata_t;
 
 
@@ -67,11 +67,14 @@ void debuginfo(int thread_id, char *out, int out_len, int out_type)
 void *lua_function(void *ptr)
 {
     int ret;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = 0;
-    memset(out, 0, 255);
-    tsg_lua_handle L = NULL;
+    
+    elua_vm *L = NULL;
+
+    char buff[1024];
+    struct elua_data output;
+    output.len = 1024;
+    output.string = buff;
+    output.type = STRING;
 
     userdata_t *userdata = (userdata_t *)ptr;
     lua_test_data_t *data = &userdata->data;
@@ -79,97 +82,85 @@ void *lua_function(void *ptr)
 
     lua_script_info_t script_info[MAX_SCRIPT_NUM] =
     {   
-        {SCRIPT_PROTOCOL_RECOGNITION, SCRIPT_NO_CACHE},   
-        {SCRIPT_COUNT_1, SCRIPT_NO_CACHE},   
-        {SCRIPT_MATCH_12345, SCRIPT_NO_CACHE},   
+        {SCRIPT_PROTOCOL_RECOGNITION, NULL},   
+        {SCRIPT_COUNT_1, NULL},   
+        {SCRIPT_MATCH_12345, NULL},   
     };
 
-    printf("[C][thread_id:%d]:tsg_lua_vm_create start...\n", thread_id);
-    L = tsg_lua_vm_create();
+    printf("[C][thread_id:%d]:elua_create_vm start...\n", thread_id);
+    L = elua_create_vm(NULL);
     if (L == NULL)
     {
-        printf("[C][thread_id:%d]:tsg_lua_vm_create failed...\n", thread_id);
+        printf("[C][thread_id:%d]:elua_create_vm failed...\n", thread_id);
         return (void *)"lua vm create failed";
     }
     printf("[C][thread_id:%d]:lua:%p ...\n", thread_id, L);
-    printf("[C][thread_id:%d]:tsg_lua_vm_create success...\n", thread_id);
+    printf("[C][thread_id:%d]:elua_create_vm success...\n", thread_id);
 
-    printf("[C][thread_id:%d]:tsg_lua_exec_file start...\n", thread_id);
-    ret = tsg_lua_exec_file(L, script_info[0].script_data, data->data, data->data_len, out, &out_len, &out_type);
-    if(ret < 0)
+    printf("[C][thread_id:%d]:elua_cache_script_file start...\n", thread_id);
+    script_info[1].escript = elua_cache_script_file(L, script_info[1].script_data, 0);
+    if (script_info[1].escript == NULL)
     {
-        printf("[C][thread_id:%d]:tsg_lua_exec_file failed...\n", thread_id);
-        return (void *)"exec failed";
-    }
-    debuginfo(thread_id, out, out_len, out_type);
-    printf("[C][thread_id:%d]:tsg_lua_exec_file success...\n", thread_id);
-
-    printf("[C][thread_id:%d]:tsg_lua_cache_script_file start...\n", thread_id);
-    script_info[1].script_id = tsg_lua_cache_script_file(L, script_info[1].script_data);
-    if (script_info[1].script_id < 0)
-    {
-        printf("[C][thread_id:%d]:tsg_lua_cache_script_file failed...\n", thread_id);
+        printf("[C][thread_id:%d]:elua_cache_script_file failed...\n", thread_id);
         return (void *)"cache script failed";
     }
-    printf("[C][thread_id:%d]:script_id:%d ...\n", thread_id, script_info[1].script_id);
-    printf("[C][thread_id:%d]:tsg_lua_cache_script_file success...\n", thread_id);
+    printf("[C][thread_id:%d]:elua_cache_script_file success...\n", thread_id);
 
-    printf("[C][thread_id:%d]:tsg_lua_cache_exec start...\n", thread_id);
-    ret = tsg_lua_cache_exec(L, script_info[1].script_id, data->data, data->data_len, out, &out_len, &out_type);
+    printf("[C][thread_id:%d]:elua_execute_script start...\n", thread_id);
+    ret = elua_execute_script(script_info[1].escript, data->data, data->data_len, NULL, NULL, &output);
     if(ret < 0)
     {
-        printf("[C][thread_id:%d]:tsg_lua_cache_exec failed...\n", thread_id);
+        printf("[C][thread_id:%d]:elua_execute_script failed...\n", thread_id);
         return (void *)"cache exec failed";
     }
-    debuginfo(thread_id, out, out_len, out_type);
-    printf("[C][thread_id:%d]:tsg_lua_cache_exec success...\n", thread_id);
+    debuginfo(thread_id, output.string, output.len, output.type);
+    printf("[C][thread_id:%d]:elua_execute_script success...\n", thread_id);
         
-    printf("[C][thread_id:%d]:tsg_lua_cache_script_file start...\n", thread_id);
-    script_info[2].script_id = tsg_lua_cache_script_file(L, script_info[2].script_data);
-    if (script_info[2].script_id < 0)
+    printf("[C][thread_id:%d]:elua_cache_script_file start...\n", thread_id);
+    script_info[2].escript = elua_cache_script_file(L, script_info[2].script_data, 0);
+    if (script_info[2].escript == NULL)
     {
-        printf("[C][thread_id:%d]:tsg_lua_cache_script_file failed...\n", thread_id);
+        printf("[C][thread_id:%d]:elua_cache_script_file failed...\n", thread_id);
         return (void *)"cache script failed";
     }
-    printf("[C][thread_id:%d]:script_id:%d ...\n", thread_id, script_info[2].script_id);
-    printf("[C][thread_id:%d]:tsg_lua_cache_script_file success...\n", thread_id);
+    printf("[C][thread_id:%d]:elua_cache_script_file success...\n", thread_id);
 
-    printf("[C][thread_id:%d]:tsg_lua_cache_exec start...\n", thread_id);
-    ret = tsg_lua_cache_exec(L, script_info[2].script_id, data->data, data->data_len, out, &out_len, &out_type);
+    printf("[C][thread_id:%d]:elua_execute_script start...\n", thread_id);
+    ret = elua_execute_script(script_info[2].escript, data->data, data->data_len, NULL, NULL, &output);
     if(ret < 0)
     {
-        printf("[C][thread_id:%d]:tsg_lua_cache_exec failed...\n", thread_id);
+        printf("[C][thread_id:%d]:elua_execute_script failed...\n", thread_id);
         return (void *)"cache exec failed";
     }
-    debuginfo(thread_id, out, out_len, out_type);
-    printf("[C][thread_id:%d]:tsg_lua_cache_exec success...\n", thread_id);
+    debuginfo(thread_id, output.string, output.len, output.type);
+    printf("[C][thread_id:%d]:elua_execute_script success...\n", thread_id);
 
-    printf("[C][thread_id:%d]:tsg_lua_uncache_script start...\n", thread_id);
-    ret = tsg_lua_uncache_script(L, script_info[1].script_id);
+    printf("[C][thread_id:%d]:elua_cleanup_script start...\n", thread_id);
+    ret = elua_cleanup_script(script_info[1].escript);
     if(ret < 0)
     {
-        printf("[C][thread_id:%d]:tsg_lua_uncache_script failed...\n", thread_id);
+        printf("[C][thread_id:%d]:elua_cleanup_script failed...\n", thread_id);
         return (void *)"uncache script failed";
     }
     printf("[C][thread_id:%d]:tsg_uncache_script success...\n", thread_id);
 
-    printf("[C][thread_id:%d]:tsg_lua_uncache_script start...\n", thread_id);
-    ret = tsg_lua_uncache_script(L, script_info[2].script_id);
+    printf("[C][thread_id:%d]:elua_cleanup_script start...\n", thread_id);
+    ret = elua_cleanup_script(script_info[2].escript);
     if(ret < 0)
     {
-        printf("[C][thread_id:%d]:tsg_lua_uncache_script failed...\n", thread_id);
+        printf("[C][thread_id:%d]:elua_cleanup_script failed...\n", thread_id);
         return (void *)"uncache script failed";
     }
     printf("[C][thread_id:%d]:tsg_uncache_script success...\n", thread_id);
 
-    printf("[C][thread_id:%d]:tsg_destory_lua start...\n", thread_id);
-    ret = tsg_destory_lua(L);
+    printf("[C][thread_id:%d]:elua_destroy_vm start...\n", thread_id);
+    ret = elua_destroy_vm(L);
     if(ret < 0)
     {
-        printf("[C][thread_id:%d]:tsg_destory_lua failed...\n", thread_id);
+        printf("[C][thread_id:%d]:elua_destroy_vm failed...\n", thread_id);
         return (void *)"uncache script failed";
     }
-    printf("[C][thread_id:%d]:tsg_destory_lua success...\n", thread_id);
+    printf("[C][thread_id:%d]:elua_destroy_vm success...\n", thread_id);
     pthread_exit((void *)"OK");
 }
 
@@ -178,7 +169,7 @@ int main(int argc, char *argv[])
 {
     int thread_num;
     pthread_t thread[MAX_THREAD_NUM] = {0};
-    //tsg_lua_handle lua[MAX_THREAD_NUM] = {0};
+    //elua_vm *Lua[MAX_THREAD_NUM] = {0};
     int thread_sum;
     int ch, i;
     char buf[1024];
@@ -254,7 +245,7 @@ int main(int argc, char *argv[])
         data->data_len = buf_len;
         data->data[buf_len] = thread_num;
         data->data_len++;
-        //lua[thread_num] = tsg_lua_vm_create();
+        //lua[thread_num] = elua_create_vm(NULL);
         //data->lua = lua[i];
         pthread_create(&thread[thread_num], NULL, lua_function, (void *)&userdata[thread_num]);
     }

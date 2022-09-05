@@ -1,328 +1,298 @@
 /*************************************************************************
-    > File Name: gtest_tsg_lua_cache_exec.cpp
+    > File Name: gtest_elua_execute_script.cpp
     > Author: pxz
     > Created Time: Sun 19 Jul 2020 01:28:20 PM CST
  ************************************************************************/
 #include <gtest/gtest.h>
-#include "tsg_lua_interface.h"
+#include "elua.h"
 static const char *data = "hello world";
 
-/* tsg_lua_cache_exec */
-TEST(tsg_lua_cache_exec, normal_return_string)
+/* elua_execute_script */
+TEST(elua_execute_script, normal_return_string)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/return_string_normal.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+     
+    int len = strlen(data);
+    struct elua_data out;
+    char buff[1024];
+    out.type = STRING;
+    out.integer = 1204;
+    out.string = buff;
+
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+    int ret = elua_execute_script(escript, data, len, NULL, NULL, &out);
     
     /* check */
     EXPECT_EQ(0, ret);
-    EXPECT_EQ(11, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("hello world", out);
+    EXPECT_EQ(11, out.len);
+    EXPECT_EQ(STRING, out.type);
+    EXPECT_STREQ("hello world", out.string);
 }
 
-TEST(tsg_lua_cache_exec, normal_return_boolean)
+TEST(elua_execute_script, normal_return_boolean)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = BOOLEAN;
-    L = tsg_lua_vm_create();
+    elua_vm *L = NULL;
+    L = elua_create_vm(NULL);
     const char *script = "./script/return_boolean_normal.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+     
+    struct elua_data out;
+
+    char *buff = (char *)data;
+    int len = strlen(data);
+    out.type = BOOLEAN;
+
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
     
     /* check */
     EXPECT_EQ(0, ret);
-    EXPECT_EQ(1, out_len);
-    EXPECT_EQ(BOOLEAN, out_type);
-    EXPECT_EQ(true, out[0]);
+    EXPECT_EQ(4, out.len);
+    EXPECT_EQ(BOOLEAN, out.type);
+    EXPECT_EQ(true, out.true_or_false);
 }
 
-TEST(tsg_lua_cache_exec, normal_return_integer)
+TEST(elua_execute_script, normal_return_integer)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = INTEGER;
-    L = tsg_lua_vm_create();
+    elua_vm *L = NULL;
+    L = elua_create_vm(NULL);
     const char *script = "./script/return_integer_normal.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+     
+    struct elua_data out;
+
+    char *buff = (char *)data;
+    int len = strlen(data);
+    out.type = INTEGER;
+
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
     
     /* check */
     EXPECT_EQ(0, ret);
-    EXPECT_EQ(8, out_len);
-    EXPECT_EQ(INTEGER, out_type);
-    EXPECT_EQ(7, *(long int *)out);
+    EXPECT_EQ(8, out.len);
+    EXPECT_EQ(INTEGER, out.type);
+    EXPECT_EQ(7, out.integer);
 }
 
-TEST(tsg_lua_cache_exec, lua_vm_isnull)
+TEST(elua_execute_script, lua_vm_isnull)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
+    elua_vm *L = NULL;
     
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/return_string_normal.lua";
-    memset(out, 0, sizeof(out));
-    int script_id = tsg_lua_cache_script_file(L, script);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
     L = NULL;
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+     
+    struct elua_data out;
+
+    char *buff = (char *)data;
+    int len = strlen(data);
+    out.type = INTEGER;
     
+    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
     /* check */
-    EXPECT_EQ(ERR_LUAVM_ISNULL, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("", out);
+    EXPECT_EQ(-1, ret);
+    EXPECT_STREQ("The vm is invalid.", elua_get_last_error_string(L));
 }
 
-TEST(tsg_lua_cache_exec, script_id_invaild)
+TEST(elua_execute_script, script_id_invaild)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
-    L = tsg_lua_vm_create();
-    memset(out, 0, 255);
-    int script_id = 0;
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+    elua_vm *L = NULL;
+    L = elua_create_vm(NULL);
+    struct elua_script *escript = 0;
+     
+    struct elua_data out;
+
+    char *buff = (char *)data;
+    int len = strlen(data);
+    out.type = INTEGER;
+    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_ID_INVAILD, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("", out);
+    EXPECT_EQ(-1, ret);
+    EXPECT_STREQ(elua_get_last_error_string(L), "");
 }
 
-TEST(tsg_lua_cache_exec, input_isnull)
+TEST(elua_execute_script, input_isnull)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
-    char *input = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/return_string_normal.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, input, strlen(data), out, &out_len, &out_type);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+    struct elua_data out;
+    out.type = INTEGER;
+    int ret = elua_execute_script(escript, NULL, strlen(data), NULL, NULL, &out);
     
     /* check */
-    EXPECT_EQ(ERR_INPUT_ISNULL, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("", out);
+    EXPECT_EQ(-1, ret);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_execute_script:1168] input or input_len is invaild.");
 }
 
-TEST(tsg_lua_cache_exec, in_len_invaild)
+TEST(elua_execute_script, in_len_invaild)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/return_string_normal.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, 0, out, &out_len, &out_type);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+
+     
+    struct elua_data out;
+
+    char *buff = (char *)data;
+    int len = 0;
+    out.type = INTEGER;
+    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
     
     /* check */
-    EXPECT_EQ(ERR_IN_LEN_INVAILD, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("", out);
+    EXPECT_EQ(-1, ret);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_execute_script:1168] input or input_len is invaild.");
 }
 
-TEST(tsg_lua_cache_exec, string_expected_but_nil)
+TEST(elua_execute_script, string_expected_but_nil)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/string_expected_but_nil.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+
+     
+    struct elua_data out;
+
+    char *buff = (char *)data;
+    int len = strlen(data);
+    out.type = INTEGER;
+    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_STRING_EXPECTED_BUT_NIL, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("", out);
+    EXPECT_EQ(-1, ret);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_call_script:1074] [string \"./script/string_expected_but_nil.lua\"]:1: bad argument #1 to 'len' (string expected, got nil).");
 }
 
-TEST(tsg_lua_cache_exec, string_expected_but_boolean)
+TEST(elua_execute_script, string_expected_but_boolean)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/string_expected_but_boolean.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+     
+    struct elua_data out;
+
+    char *buff = (char *)data;
+    int len = strlen(data);
+    out.type = INTEGER;
+    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_STRING_EXPECTED_BUT_BOOL, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("", out);
+    EXPECT_EQ(-1, ret);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_call_script:1074] [string \"./script/string_expected_but_boolean.lua\"]:2: bad argument #1 to 'len' (string expected, got boolean).");
 }
 
-TEST(tsg_lua_cache_exec, call_global_but_nil)
+TEST(elua_execute_script, call_global_but_nil)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/call_global_but_nil.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+     
+    struct elua_data out;
+
+    char *buff = (char *)data;
+    int len = strlen(data);
+    out.type = INTEGER;
+    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_CALL_GLOBAL_BUT_NIL, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("", out);
+    EXPECT_EQ(-1, ret);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_call_script:1074] [string \"./script/call_global_but_nil.lua\"]:1: attempt to call global 'tablefunc' (a nil value).");
 }
 
 
-// TEST(tsg_lua_cache_exec, return_too_few)
-// {
-//     tsg_lua_handle L = NULL;
-//     char out[255];
-//     size_t out_len = 0;
-//     size_t out_type = STRING;
-
-//     L = tsg_lua_vm_create();
-//     const char *script = "./script/return_too_few.lua";
-//     memset(out, 0, 255);
-//     int script_id = tsg_lua_cache_script_file(L, script);
-//     int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
-    
-//     /* check */
-//     EXPECT_EQ(ERR_SCRIPT_RETURN_TOO_FEW, ret);
-//     EXPECT_EQ(0, out_len);
-//     EXPECT_EQ(STRING, out_type);
-//     EXPECT_STREQ("", out);
-// }
-
-TEST(tsg_lua_cache_exec, return_too_much)
+TEST(elua_execute_script, return_too_much)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/return_too_much.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+     
+    struct elua_data out;
+
+    char *buff = (char *)data;
+    int len = strlen(data);
+    out.type = INTEGER;
+    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_RETURN_TOO_MUCH, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("", out);
+    EXPECT_EQ(-1, ret);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_vm_return_value:1107] the script return too many values, the num of value is 3, 5.");
 }
 
-TEST(tsg_lua_cache_exec, return_type_nil)
+TEST(elua_execute_script, return_length_iszero)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
-    const char *script = "./script/return_type_invaild.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
-    
-    /* check */
-    EXPECT_EQ(ERR_RETUNR_NIL, ret);
-    EXPECT_EQ(5, out_len);
-    EXPECT_EQ(NIL, out_type);
-    EXPECT_STREQ("", out);
-}
-
-TEST(tsg_lua_cache_exec, return_length_iszero)
-{
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
-
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/return_length_iszero.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+     
+    struct elua_data out;
+
+    char *buff = (char *)data;
+    int len = strlen(data);
+    out.type = INTEGER;
+    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_RETURN_LEN_INVAILD, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("", out);
+    EXPECT_EQ(-1, ret);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_vm_return_value:1101] script out_len is 0.");
 }
 
-TEST(tsg_lua_cache_exec, string_expected_but_table)
+TEST(elua_execute_script, string_expected_but_table)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/string_expected_but_table.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+     
+    struct elua_data out;
+
+    char *buff = (char *)data;
+    int len = strlen(data);
+    out.type = INTEGER;
+    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_STRING_EXPECTED_BUT_TABLE, ret);
-    EXPECT_EQ(0, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("", out);
+    EXPECT_EQ(-1, ret);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_call_script:1074] [string \"./script/string_expected_but_table.lua\"]:2: bad argument #1 to 'len' (string expected, got table).");
 }
 
-TEST(tsg_lua_cache_exec, normal_return_string_sharp)
+TEST(elua_execute_script, normal_return_string_sharp)
 {
-    tsg_lua_handle L = NULL;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/return_string_normal_sharp.lua";
-    memset(out, 0, 255);
-    int script_id = tsg_lua_cache_script_file(L, script);
-    int ret = tsg_lua_cache_exec(L, script_id, data, strlen(data), out, &out_len, &out_type);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
+     
+    struct elua_data out;
+    out.type = STRING;
+    out.len = 1024;
+    char buff[1024];
+    out.string = buff;
+
+    int len = strlen(data);
+    int ret = elua_execute_script(escript, data, len, NULL, NULL, &out);
     
     /* check */
     EXPECT_EQ(0, ret);
-    EXPECT_EQ(11, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("hello world", out);
+    EXPECT_EQ(len, out.len);
+    EXPECT_STREQ(data, out.string);
 }

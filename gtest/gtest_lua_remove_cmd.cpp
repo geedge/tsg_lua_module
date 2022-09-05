@@ -1,17 +1,22 @@
 #include <gtest/gtest.h>
-#include "tsg_lua_interface.h"
+#include "elua.h"
 
 TEST(lua_remove_cmd, normal)
 {
-	tsg_lua_handle L = tsg_lua_vm_create_with_name("TEST");
+	elua_vm *L = elua_create_vm(NULL);
 	ASSERT_TRUE(L);
+	char buff[1024];
+	elua_data out;
+	out.type = STRING;
+	out.integer = 1024;
+	out.string = buff;
 
-	lua_remove_cmd(L, "print");
+	elua_remove_function(L, "print");
 
-	char out[1204];
-	size_t len = 1024;
-	size_t type = STRING;
-	int ret = tsg_lua_exec_file(L, "./script/remove_print.lua", "remove print", strlen("remove print"), out, &len, &type);
-	EXPECT_EQ(ret, ERR_SCRIPT_EXEC_ERROR);
-	
+	struct elua_script *escript = elua_cache_script_file(L, "./script/remove_print.lua", 0);
+	int ret = elua_execute_script(escript, "remove print", strlen("remove print"), NULL, NULL, &out);
+	EXPECT_EQ(ret, -1);
+
+	const char *errmsg = "[elua_call_script:1074] [string \"./script/remove_print.lua\"]:3: attempt to call global \'print\' (a nil value).";
+	EXPECT_STREQ(elua_get_last_error_string(L), errmsg);
 }

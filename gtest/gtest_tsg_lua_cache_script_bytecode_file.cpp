@@ -1,43 +1,45 @@
 /*************************************************************************
-    > File Name: gtest_tsg_lua_cache_script_file.cpp
+    > File Name: gtest_elua_cache_script_file.cpp
     > Author: pxz
     > Created Time: Sun 19 Jul 2020 01:28:20 PM CST
  ************************************************************************/
 #include <gtest/gtest.h>
-#include "tsg_lua_interface.h"
+#include "elua.h"
 
-/* tsg_lua_cache_script_file */
-TEST(tsg_lua_cache_script_bytecode_file, normal)
+/* elua_cache_script_file */
+TEST(elua_cache_script_bytecode_file, normal)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = "./script/return_string_normal.luajit";
-    int script_id = tsg_lua_cache_script_file(L, script);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
     
     /* check */
-    EXPECT_EQ(1, script_id);
+    EXPECT_NE((void *)NULL, escript);
 }
 
-TEST(tsg_lua_cache_script_bytecode_file, lua_vm_isnull)
+TEST(elua_cache_script_bytecode_file, lua_vm_isnull)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
     const char *script = "./script/return_string_normal.luajit";
-    int script_id = tsg_lua_cache_script_file(L, script);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
     
     /* check */
-    EXPECT_EQ(ERR_LUAVM_ISNULL, script_id);
+    EXPECT_EQ(NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "The vm is invalid.");
 }
 
-TEST(tsg_lua_cache_script_bytecode_file, script_isnull)
+TEST(elua_cache_script_bytecode_file, script_isnull)
 {
-    tsg_lua_handle L = NULL;
+    elua_vm *L = NULL;
 
-    L = tsg_lua_vm_create();
+    L = elua_create_vm(NULL);
     const char *script = NULL;
-    int script_id = tsg_lua_cache_script_file(L, script);
+    struct elua_script *escript = elua_cache_script_file(L, script, 0);
     
     /* check */
-    EXPECT_EQ(ERR_SCRIPT_ISNULL, script_id);
+    EXPECT_EQ(NULL, escript);
+    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_cache_script_file:765] Parameter error.");
 }

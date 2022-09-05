@@ -1,15 +1,15 @@
 /*************************************************************************
-    > File Name: gtest_tsg_lua_vm_create.cpp
+    > File Name: gtest_elua_create_vm.cpp
     > Author: pxz
     > Created Time: Sun 19 Jul 2020 01:27:13 PM CST
  ************************************************************************/
 #include <gtest/gtest.h>
-#include "tsg_lua_interface.h"
+#include "elua.h"
 
-/* tsg_lua_vm_create */
-TEST(tsg_lua_vm_create, create_normal)
+/* elua_create_vm */
+TEST(elua_create_vm, create_normal)
 {
-    tsg_lua_handle L = NULL;
-    L = tsg_lua_vm_create();
+    elua_vm *L = NULL;
+    L = elua_create_vm(NULL);
     EXPECT_NE((void *)NULL, L);
 }

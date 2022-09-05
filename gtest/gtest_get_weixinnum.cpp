@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "tsg_lua_interface.h"
+#include "elua.h"
 
 static char *get_file_to_buffer(const char *file, int *len)
 {
@@ -29,91 +29,51 @@ static char *get_file_to_buffer(const char *file, int *len)
     return NULL;
 }
 
-TEST(tsg_lua_get_weixinnum, exec_cache_script)
+TEST(elua_get_weixinnum, exec_cache_script)
 {
-	tsg_lua_handle L = NULL;
+	elua_vm *L = NULL;
     int script_len;
     int data_len;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
-    memset(out, 0, 255);
+    
+    char buff[1024];
+    struct elua_data output;
+    output.len = 1024;
+    output.type = STRING;
+    output.string = buff; 
 
-	L = tsg_lua_vm_create();
+	L = elua_create_vm(NULL);
 	const char *script = get_file_to_buffer("./script/handle_weixinnum.lua", &script_len);
-	int script_id = tsg_lua_cache_script(L, script, script_len);
+	struct elua_script *escript = elua_cache_script(L, script, script_len, 0);
 	const char *data = get_file_to_buffer("./script/weixin_id_ios_20200423_004.pcap", &data_len);
-	int ret = tsg_lua_cache_exec(L, script_id, data, data_len, out, &out_len, &out_type);
+	int ret = elua_execute_script(escript, data, data_len, NULL, NULL, &output);
     free((void *)data);
     free((void *)script);
 
     EXPECT_EQ(0, ret);
-    EXPECT_EQ(10, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("1955740780", out);
+    EXPECT_EQ(10, output.len);
+    EXPECT_EQ(STRING, output.type);
+    EXPECT_STREQ("1955740780", output.string);
 }
 
-TEST(tsg_lua_get_weixinnum, exec_cache_file)
+TEST(elua_get_weixinnum, exec_cache_script_file)
 {
-	tsg_lua_handle L = NULL;
+	elua_vm *L = NULL;
     int data_len;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
-
-    memset(out, 0, 255);
-	L = tsg_lua_vm_create();
-	int script_id = tsg_lua_cache_script_file(L, "./script/handle_weixinnum.lua");
+    
+    char buff[1024];
+    memset(buff, 0, 255);
+    struct elua_data output;
+    output.len = 1024;
+    output.type = STRING;
+    output.string = buff;
+	L = elua_create_vm(NULL);
+	struct elua_script *escript = elua_cache_script_file(L, "./script/handle_weixinnum.lua", 0);
 	const char *data = get_file_to_buffer("./script/weixin_id_ios_20200423_004.pcap", &data_len);
-	int ret = tsg_lua_cache_exec(L, script_id, data, data_len, out, &out_len, &out_type);
+	int ret = elua_execute_script(escript, data, data_len, NULL, NULL, &output);
     free((void *)data);
 
     EXPECT_EQ(0, ret);
-    EXPECT_EQ(10, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("1955740780", out);
-}
-
-TEST(tsg_lua_get_weixinnum, exec_script)
-{
-	tsg_lua_handle L = NULL;
-    int script_len;
-    int data_len;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
-
-    memset(out, 0, 255);
-	L = tsg_lua_vm_create();
-	const char *script = get_file_to_buffer("./script/handle_weixinnum.lua", &script_len);
-	const char *data = get_file_to_buffer("./script/weixin_id_ios_20200423_004.pcap", &data_len);
-	int ret = tsg_lua_exec(L, script, script_len, data, data_len, out, &out_len, &out_type);
-    free((void *)data);
-    free((void *)script);
-
-    EXPECT_EQ(0, ret);
-    EXPECT_EQ(10, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("1955740780", out);
-}
-
-TEST(tsg_lua_get_weixinnum, exec_file)
-{
-	tsg_lua_handle L = NULL;
-    int data_len;
-    char out[255];
-    size_t out_len = 0;
-    size_t out_type = STRING;
-
-    memset(out, 0, 255);
-	L = tsg_lua_vm_create();
-	const char *script = "./script/handle_weixinnum.lua";
-	const char *data = get_file_to_buffer("./script/weixin_id_ios_20200423_004.pcap", &data_len);
-	int ret = tsg_lua_exec_file(L, script, data, data_len, out, &out_len, &out_type);
-    free((void *)data);
-
-    EXPECT_EQ(0, ret);
-    EXPECT_EQ(10, out_len);
-    EXPECT_EQ(STRING, out_type);
-    EXPECT_STREQ("1955740780", out);
+    EXPECT_EQ(10, output.len);
+    EXPECT_EQ(STRING, output.type);
+    EXPECT_STREQ("1955740780", output.string);
 }

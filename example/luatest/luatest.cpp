@@ -19,7 +19,7 @@ extern "C"
 #include<sys/stat.h>
 #include<dirent.h>
 }
-#include"tsg_lua_interface.h"
+#include"elua.h"
 
 
 #define MAC_FRAME_HEADER_LEN    14
@@ -34,7 +34,7 @@ extern "C"
 #define MIN(a, b)   ((a) > (b) ?(b):(a))
 #endif
 
-#define TSG_LUA_LOOP_TIMES 10000
+#define elua_LOOP_TIMES 10000
 
 int c_pcap_flag[MAX_THREAD_NUM];
 int c_text_flag[MAX_THREAD_NUM];
@@ -82,7 +82,7 @@ typedef struct lua_thread_info_s{
 
 typedef struct lua_pacp_info_s
 {
-    tsg_lua_handle L;
+    elua_vm *L;
     size_t      script_id;
     size_t      thread_id;
     uint32_t    packet_num;
@@ -93,7 +93,7 @@ typedef struct lua_pacp_info_s
 
 typedef struct lua_text_info_s
 {
-    tsg_lua_handle L;
+    elua_vm *L;
     size_t      script_id;
     size_t      thread_id;
     uint64_t    total_time;
@@ -318,7 +318,7 @@ void c_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_ch
     while(c_pcap_flag[pcap_info->thread_id] != 3)
     {
         memset(result, 0, sizeof(result));
-        for(i = 0; i < TSG_LUA_LOOP_TIMES; i++)
+        for(i = 0; i < elua_LOOP_TIMES; i++)
         {
             pcap_info->c_handle(tcp_payload, tcp_payload_len, pcap_info->feature, result);
         }
@@ -327,13 +327,13 @@ void c_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_ch
 
     memset(result, 0, sizeof(result));
     clock_gettime(CLOCK_MONOTONIC, &time_start);
-    for(i = 0; i < TSG_LUA_LOOP_TIMES; i++)
+    for(i = 0; i < elua_LOOP_TIMES; i++)
     {
         pcap_info->c_handle(tcp_payload, tcp_payload_len, pcap_info->feature, result);
     }
     clock_gettime(CLOCK_MONOTONIC, &time_end);
     time += calc_time(time_start, time_end);
-    time /= TSG_LUA_LOOP_TIMES;
+    time /= elua_LOOP_TIMES;
     pcap_info->total_time += time;
 
     debuginfo_len = strlen(pcap_info->debuginfo);
@@ -369,7 +369,7 @@ static void c_text_handle(c_text_info_t *text_info, char *debuginfo)
     while(c_text_flag[text_info->thread_id] != 3)
     {
         memset(result, 0, sizeof(result));
-        for(i = 0; i < TSG_LUA_LOOP_TIMES; i++)
+        for(i = 0; i < elua_LOOP_TIMES; i++)
         {
             text_info->c_handle((const u_char *)buffer, buffer_len, text_info->feature, result);
         }
@@ -377,7 +377,7 @@ static void c_text_handle(c_text_info_t *text_info, char *debuginfo)
     }
 
     clock_gettime(CLOCK_MONOTONIC, &time_start);
-    for (i = 0; i < TSG_LUA_LOOP_TIMES; i ++)
+    for (i = 0; i < elua_LOOP_TIMES; i ++)
     {
         if (text_info->c_handle((const u_char *)buffer, buffer_len, text_info->feature, result))
         {
@@ -386,7 +386,7 @@ static void c_text_handle(c_text_info_t *text_info, char *debuginfo)
     }
     clock_gettime(CLOCK_MONOTONIC, &time_end);
     time = calc_time(time_start, time_end);
-    time /= TSG_LUA_LOOP_TIMES;
+    time /= elua_LOOP_TIMES;
     text_info->total_time += time;
 
     file_name = (const char *)memrchr(text_info->file_name, '/', strlen(text_info->file_name));
@@ -546,9 +546,9 @@ void lua_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_
 
     while (lua_pcap_flag[pcap_info->thread_id] != 3)
     {
-        for (i = 0; i < TSG_LUA_LOOP_TIMES; i++)
+        for (i = 0; i < elua_LOOP_TIMES; i++)
         {
-            ret = tsg_lua_cache_exec(pcap_info->L, pcap_info->script_id, (const char *)tcp_payload, tcp_payload_len, out, &out_len, &out_type);
+            ret = elua_execute_script(pcap_info->L, pcap_info->script_id, (const char *)tcp_payload, tcp_payload_len, out, &out_len, &out_type);
             if (ret < 0)
             {
                 sprintf(result, "failed");
@@ -559,9 +559,9 @@ void lua_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_
     }
 
     clock_gettime(CLOCK_MONOTONIC, &time_start);
-    for (i = 0; i < TSG_LUA_LOOP_TIMES; i++)
+    for (i = 0; i < elua_LOOP_TIMES; i++)
     {
-        ret = tsg_lua_cache_exec(pcap_info->L, pcap_info->script_id, (const char *)tcp_payload, tcp_payload_len, out, &out_len, &out_type);
+        ret = elua_execute_script(pcap_info->L, pcap_info->script_id, (const char *)tcp_payload, tcp_payload_len, out, &out_len, &out_type);
         if (ret < 0)
         {
             sprintf(result, "failed");
@@ -570,7 +570,7 @@ void lua_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_
     }
     clock_gettime(CLOCK_MONOTONIC, &time_end);
     time += calc_time(time_start, time_end);
-    time /= TSG_LUA_LOOP_TIMES;
+    time /= elua_LOOP_TIMES;
     pcap_info->total_time += time;
 
     switch(out_type)
@@ -595,7 +595,7 @@ void lua_pcap_handle(u_char *userarg, const struct pcap_pkthdr *pkthdr, const u_
     }
     return ;
 }
-static void lua_pcap_prefix_handle(lua_thread_info_t *thread_info, char *debuginfo, tsg_lua_handle L, size_t script_id)
+static void lua_pcap_prefix_handle(lua_thread_info_t *thread_info, char *debuginfo, elua_vm *L, size_t script_id)
 {
 
     if ((thread_info == NULL) || (debuginfo == NULL) || (script_id < 1))
@@ -629,7 +629,7 @@ static void lua_pcap_prefix_handle(lua_thread_info_t *thread_info, char *debugin
     return ;
 }
 
-static void lua_text_handle(lua_text_info_t *text_info, char *debuginfo, tsg_lua_handle lua)
+static void lua_text_handle(lua_text_info_t *text_info, char *debuginfo, elua_vm *Lua)
 {
     char buffer[1024 * 1024];
     size_t buffer_len;
@@ -656,9 +656,9 @@ static void lua_text_handle(lua_text_info_t *text_info, char *debuginfo, tsg_lua
 
     while (lua_text_flag[text_info->thread_id] != 3)
     {
-        for (i = 0; i < TSG_LUA_LOOP_TIMES; i++)
+        for (i = 0; i < elua_LOOP_TIMES; i++)
         {
-            ret = tsg_lua_cache_exec(lua, text_info->script_id, (const char *)buffer, buffer_len, out, &out_len, &out_type);
+            ret = elua_execute_script(lua, text_info->script_id, (const char *)buffer, buffer_len, out, &out_len, &out_type);
             if (ret < 0)
             {
                 return;
@@ -668,9 +668,9 @@ static void lua_text_handle(lua_text_info_t *text_info, char *debuginfo, tsg_lua
     }
 
     clock_gettime(CLOCK_MONOTONIC, &time_start);
-    for (i = 0; i < TSG_LUA_LOOP_TIMES; i ++)
+    for (i = 0; i < elua_LOOP_TIMES; i ++)
     {
-        ret = tsg_lua_cache_exec(lua, text_info->script_id, (const char *)buffer, buffer_len, out, &out_len, &out_type);
+        ret = elua_execute_script(lua, text_info->script_id, (const char *)buffer, buffer_len, out, &out_len, &out_type);
         if (ret < 0)
         {
             return;
@@ -678,7 +678,7 @@ static void lua_text_handle(lua_text_info_t *text_info, char *debuginfo, tsg_lua
     }
     clock_gettime(CLOCK_MONOTONIC, &time_end);
     time = calc_time(time_start, time_end);
-    time /= TSG_LUA_LOOP_TIMES;
+    time /= elua_LOOP_TIMES;
     text_info->total_time += time;
 
     switch(out_type)
@@ -715,7 +715,7 @@ static void *lua_file_handle(void *ptr)
     size_t script_id;
     char script[4096];
     size_t script_len;
-    tsg_lua_handle lua;
+    elua_vm *Lua;
     char *debuginfo = NULL;
     lua_thread_info_t * thread_info = (lua_thread_info_t *)ptr;
     char result[512];
@@ -732,7 +732,7 @@ static void *lua_file_handle(void *ptr)
     memset(debuginfo, 0, 10240);
     memset(result, 0, sizeof(result));
 
-    lua = tsg_lua_vm_create();
+    lua = elua_create_vm(NULL);
     if (lua == NULL)
     {
         pthread_exit(debuginfo);
@@ -741,7 +741,7 @@ static void *lua_file_handle(void *ptr)
     {
         pthread_exit(debuginfo);
     }
-    script_id = tsg_lua_cache_script(lua, script, script_len);
+    script_id = elua_cache_script(lua, script, script_len);
     if (script_id < 1)
     {
         pthread_exit(debuginfo);

@@ -13,7 +13,7 @@ end
 local rsp_header = nil
 header = TSG.rsp.get_header()
 for k, v in pairs(header) do
-	if not req_header then
+	if not rsp_header then
 		rsp_header = string.format("%s:%s", k, v)
 	else
 		rsp_header = string.format("%s,%s:%s", rsp_header, k, v)
