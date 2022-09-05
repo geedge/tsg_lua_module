@@ -32,7 +32,7 @@ struct elua_data
 
 struct elua_vm;
 
-/* function name:     elua_vm_create
+/* function name:     elua_create_vm
  * input:             char *name          the name of virtual machine, default: "TSG"
  * return value:      elua_handle      successed,return a virtual machine; failed, return NULL*/
 struct elua_vm *elua_create_vm(const char *vm_name);
@@ -41,7 +41,7 @@ int elua_remove_function(struct elua_vm *vm, const char *elua_function);
 
 const char *elua_get_last_error_string(struct elua_vm *vm);
 
-/* function name:     destory_lua         
+/* function name:     destroy_lua         
  * input:             elua_handle L         a virtual machine
  * return value:      int                      successed, return 0; failed, return error code */
 int elua_destroy_vm(struct elua_vm *vm);
@@ -75,14 +75,14 @@ int elua_register_cbinding(struct elua_vm *vm, const char *func_space_name, cons
 
 struct elua_context;
 
-/* function name:     elua_script_context_malloc         
+/* function name:     elua_context_malloc         
  * input:             elua_handle L  
- * return value:      elua_script_context           failed, return NULL; successed, return a context*/
+ * return value:      elua_context           failed, return NULL; successed, return a context*/
 struct elua_context *elua_create_context(struct elua_vm *vm, const char *ctx_name);
 
-/* function name:     elua_script_context_free         
+/* function name:     elua_context_free         
  * input:             elua_handle L  
- * input:             elua_script_context context          context waiting to free        
+ * input:             elua_context context          context waiting to free        
  * return value:      int                                 successed, return 0; failed, return -1 */
 int elua_destroy_context(struct elua_context *ctx);
 
@@ -95,15 +95,16 @@ struct elua_script;
  *              
  * return value:     int                     successed, return a script id which is bigger than 1; failed, return error code */
 struct elua_script *elua_cache_script(struct elua_vm *vm, const char *script, size_t script_len, size_t timeout_ms);
+struct elua_script *elua_cache_script_file(struct elua_vm *vm, const char *script, size_t timeout_ms);
 
-/* function name:     elua_cache_exec   
+/* function name:     elua_execute_script   
  * input:             elua_handle L              a virtual machine
  *                    size_t script_id              a script id
  *                    struct elua_data_t in          data waiting to be handled
  *                    void *userdata                can get the userdata with elua_get_userdata(L)
- *                    elua_script_context context    Can accessed with lua-name.context in lua script
+ *                    elua_context context    Can accessed with lua-name.context in lua script
  *                    size_t timeout_ms             Maximum time to run the script.if timeout_ms > 0, jit.off; timeout_ms == 0, jit.on, not expired.
- * output:            struct elua_arg_t *outvalue    Requires input of an expected type that is not NIL, the type of the result that will be output after the call is complete
+ * output:            struct estruct elua_data *outvalue    Requires input of an expected type that is not NIL, the type of the result that will be output after the call is complete
  * return value:      int                           successed, return 0; failed, return error code */
 int elua_execute_script(struct elua_script *escript, const char *input, size_t input_len, void *userdata, struct elua_context *ctx, struct elua_data *output);
 
