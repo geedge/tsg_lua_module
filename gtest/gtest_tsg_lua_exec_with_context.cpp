@@ -26,7 +26,7 @@ int get_userdata(elua_vm *L)
 	edata.type = STRING;
 	edata.buff = (char *)ud;
 	edata.len = strlen((char *)ud);
-	elua_cbinding_set_output_params(L, &edata, 1);
+	elua_cbinding_append_output_params(L, &edata, 1);
 	return 1;
 }
 

@@ -12,7 +12,7 @@ int get_hello(elua_vm *L)
     ldata.type = STRING;
     ldata.buff = (char *)"hello";
     ldata.len = 5;
-    elua_cbinding_set_output_params(L, &ldata, 1);
+    elua_cbinding_append_output_params(L, &ldata, 1);
     return 1;
 }
 
@@ -43,7 +43,7 @@ int set_world(elua_vm *L)
     retvalue.len = argv[0].len + argv[1].len + 2;
     retvalue.buff = (char *)calloc(1, retvalue.len);
     sprintf(retvalue.buff, "%s %s.", argv[0].buff, argv[1].buff);
-    elua_cbinding_set_output_params(L, &retvalue, 1);
+    elua_cbinding_append_output_params(L, &retvalue, 1);
     free(retvalue.buff);
 
     return 1;
@@ -75,7 +75,7 @@ int get_req_header(elua_vm *L)
     retvalue.table = etab;
     retvalue.len = sizeof(struct elua_data);
 
-    elua_cbinding_set_output_params(L, &retvalue, 1);
+    elua_cbinding_append_output_params(L, &retvalue, 1);
     elua_destroy_table(etab);
 
     return 1;
@@ -105,7 +105,7 @@ int get_rsp_header(elua_vm *L)
     retvalue.table = etab;
     retvalue.len = sizeof(struct elua_data);
 
-    elua_cbinding_set_output_params(L, &retvalue, 1);
+    elua_cbinding_append_output_params(L, &retvalue, 1);
     elua_destroy_table(etab);
 
     return 1;
@@ -117,7 +117,7 @@ int get_result(elua_vm *L)
     retvalue.type = BOOLEAN;
     retvalue.len = sizeof(bool);
     retvalue.true_or_false = false;
-    elua_cbinding_set_output_params(L, &retvalue, 1);
+    elua_cbinding_append_output_params(L, &retvalue, 1);
     return 1;
 }
 
@@ -125,7 +125,7 @@ int get_nil(elua_vm *L)
 {
     struct elua_data retvalue;
     retvalue.type = NIL;
-    elua_cbinding_set_output_params(L, &retvalue, 1);
+    elua_cbinding_append_output_params(L, &retvalue, 1);
     return 1;   
 }
 
@@ -135,7 +135,7 @@ int get_time(elua_vm *L)
     retvalue.type = INTEGER;
     retvalue.len = sizeof(long);
     retvalue.integer = 0x12345678;
-    elua_cbinding_set_output_params(L, &retvalue, 1);
+    elua_cbinding_append_output_params(L, &retvalue, 1);
     return 1;
 }
 
@@ -145,11 +145,11 @@ int set_repeat(elua_vm *L)
     retvalue.type = INTEGER;
     retvalue.len = sizeof(long);
     retvalue.integer = 0x12345678;
-    elua_cbinding_set_output_params(L, &retvalue, 1);
+    elua_cbinding_append_output_params(L, &retvalue, 1);
     retvalue.type = STRING;
     retvalue.len = 5;
     retvalue.buff = (char *)"hello";
-    elua_cbinding_set_output_params(L, &retvalue, 1);
+    elua_cbinding_append_output_params(L, &retvalue, 1);
 
     return 1;
 }
@@ -187,7 +187,7 @@ int set_multi_type_retvalue(elua_vm *L)
     retvalue.table = etab;
     retvalue.len = sizeof(struct elua_data);
 
-    elua_cbinding_set_output_params(L, &retvalue, 1);
+    elua_cbinding_append_output_params(L, &retvalue, 1);
     elua_destroy_table(etab);
 
     return 1;

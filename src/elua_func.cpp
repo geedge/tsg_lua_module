@@ -1476,7 +1476,7 @@ void elua_destroy_table(struct elua_table *table)
     return;
 }
 
-int elua_cbinding_set_output_params(struct elua_vm *vm, struct elua_data *params, int params_num)
+int elua_cbinding_append_output_params(struct elua_vm *vm, struct elua_data *params, int params_num)
 {
     lua_State *L = (lua_State *)vm;
     if (L == NULL)
