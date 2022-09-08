@@ -1141,7 +1141,7 @@ static int elua_vm_return_value(lua_State *L, struct elua_data *output, char *er
 
         if (actual_ret_type != output->type)
         {
-            snprintf(errmsg, 1023, "[%s:%d] expect out_type is %d, actual out_type is:%zu.", __FUNCTION__, __LINE__, output->type, lua_ret_type);
+            snprintf(errmsg, 1023, "[%s:%d] expect out_type is %d, actual out_type is:%d.", __FUNCTION__, __LINE__, output->type, actual_ret_type);
             output->type = actual_ret_type;
             return -1;
         }
