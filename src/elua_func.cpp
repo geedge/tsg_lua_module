@@ -548,7 +548,7 @@ static int elua_set_script_timeout(struct lua_State *L, int ms)
     else
     {
         elua_info->elua_mode = elua_JIT_OFF;
-        luaJIT_setmode(L, 1, LUAJIT_MODE_FUNC | LUAJIT_MODE_OFF);
+        luaJIT_setmode(L, 0,  LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
         int hook_granularity = ms * 1000000 / 20; // about ms / 20
         lua_sethook(L, (lua_Hook)luaMaskCountHook, LUA_MASKCOUNT, hook_granularity);
     }
