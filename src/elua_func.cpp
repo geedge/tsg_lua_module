@@ -1163,12 +1163,6 @@ int elua_execute_script(struct elua_script *escript, const char *input, size_t i
     }
     elua_private_info_t *elua_info = (elua_private_info_t *)lua_getexdata(L);
 
-    if (input == NULL || input_len == 0)
-    {
-        snprintf(elua_info->errmsg, 1023, "[%s:%d] input or input_len is invaild.", __FUNCTION__, __LINE__);
-        return -1;
-    }
-
     size_t timeout_ms = escript->timeout_ms;
     elua_info->userdata = userdata;
     if (ctx != NULL)
@@ -1183,7 +1177,10 @@ int elua_execute_script(struct elua_script *escript, const char *input, size_t i
     elua_info = (elua_private_info_t *)lua_getexdata(L);
     elua_exception = elua_info->elua_exception;
 
-    elua_set_data(L, elua_info->elua_name, input, input_len);
+    if (input != NULL && input_len != 0)
+    {
+        elua_set_data(L, elua_info->elua_name, input, input_len);
+    }
 
     if (setjmp(*elua_exception) == 0)
     {

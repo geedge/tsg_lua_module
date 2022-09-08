@@ -121,15 +121,21 @@ TEST(elua_execute_script, input_isnull)
     elua_vm *L = NULL;
 
     L = elua_create_vm(NULL);
-    const char *script = "./script/return_string_normal.lua";
+    const char *script = "./script/input_is_null.lua";
     struct elua_script *escript = elua_cache_script_file(L, script, 0);
     struct elua_data out;
-    out.type = INTEGER;
+    char buff[1024];
+    memset(buff, 0, 1024);
+    out.buff = buff;
+    out.len = 1024;
+    out.type = STRING;
     int ret = elua_execute_script(escript, NULL, strlen(data), NULL, NULL, &out);
     
     /* check */
-    EXPECT_EQ(-1, ret);
-    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_execute_script:1168] input or input_len is invaild.");
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(5, out.len);
+    EXPECT_EQ(STRING, out.type);
+    EXPECT_STREQ("hello", out.buff);
 }
 
 TEST(elua_execute_script, in_len_invaild)
@@ -137,20 +143,25 @@ TEST(elua_execute_script, in_len_invaild)
     elua_vm *L = NULL;
 
     L = elua_create_vm(NULL);
-    const char *script = "./script/return_string_normal.lua";
+    const char *script = "./script/input_is_null.lua";
     struct elua_script *escript = elua_cache_script_file(L, script, 0);
 
      
     struct elua_data out;
 
-    char *buff = (char *)data;
+    char buff[1024];
+    memset(buff, 0, 1024);
     int len = 0;
-    out.type = INTEGER;
-    int ret = elua_execute_script(escript, buff, len, NULL, NULL, &out);
+    out.buff = buff;
+    out.len = 1024;
+    out.type = STRING;
+    int ret = elua_execute_script(escript, data, len, NULL, NULL, &out);
     
     /* check */
-    EXPECT_EQ(-1, ret);
-    EXPECT_STREQ(elua_get_last_error_string(L), "[elua_execute_script:1168] input or input_len is invaild.");
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(5, out.len);
+    EXPECT_EQ(STRING, out.type);
+    EXPECT_STREQ("hello", out.buff);
 }
 
 TEST(elua_execute_script, string_expected_but_nil)
