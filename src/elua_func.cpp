@@ -509,7 +509,7 @@ static void luaMaskCountHook(struct elua_vm *vm, lua_Debug *ar)
     long elapsed = mstime() - elua_info->time_now;
     if ( elua_info->time_limit > 0 && elapsed > elua_info->time_limit)
     {
-        //printf("elasped:%ld\n", elapsed);
+        lua_getinfo(L, "S", ar);
         if (ar->what && memcmp(ar->what, "C", 1) == 0)
         {
             elua_info->is_expired = true;
